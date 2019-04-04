@@ -1,13 +1,23 @@
 import sys
 from PySide2.QtUiTools import QUiLoader
-from PySide2.QtWidgets import QApplication
+from PySide2.QtWidgets import QApplication, QMainWindow
 from PySide2.QtCore import QFile
 
 from twisted.internet.error import ReactorAlreadyInstalledError
 
 
+from mainwindow import Ui_MainWindow
+
+
+class MainWindow(QMainWindow, Ui_MainWindow):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setupUi(self)
+
+
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
+    qtapp = QApplication(sys.argv)
 
     import qt5reactor
 
@@ -18,14 +28,16 @@ if __name__ == "__main__":
 
     from twisted.internet import reactor
 
-    file = QFile("mainwindow.ui")
-    file.open(QFile.ReadOnly)
-    loader = QUiLoader()
-    mainwindow = loader.load(file)
+    #file = QFile("mainwindow.ui")
+    #file.open(QFile.ReadOnly)
+    #loader = QUiLoader()
+    #mainwindow = loader.load(file)
+
+    mainwindow = MainWindow()
 
     from app import WormholeGui
 
-    wgui = WormholeGui(app, mainwindow)
+    wgui = WormholeGui(qtapp, mainwindow)
 
     mainwindow.show()
 

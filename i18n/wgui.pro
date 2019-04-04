@@ -3,5 +3,5 @@ SOURCES += ../app.py
 
 FORMS   += ../mainwindow.ui
 
-TRANSLATIONS += it.ts
-TRANSLATIONS += en.ts
+TRANSLATIONS += it_IT.ts
+TRANSLATIONS += en_US.ts

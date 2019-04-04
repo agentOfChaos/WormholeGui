@@ -5,8 +5,8 @@ import os
 import sys
 import logging
 from logging import StreamHandler
-from PySide2.QtCore import QEvent, QObject
-from PySide2.QtWidgets import QMessageBox, QFileDialog
+from PySide2.QtCore import QEvent, QObject, QTranslator, QLocale
+from PySide2.QtWidgets import QMessageBox, QFileDialog, QMainWindow, QApplication
 from PySide2.QtGui import QTextCursor, QGuiApplication
 
 
@@ -36,11 +36,12 @@ class WormholeGui(QObject):
     appname = "WormholeGui"
     appauthor = "WormholeGui"
 
-    def __init__(self, app, mainwindow):
+    def __init__(self, app: QApplication, mainwindow: QMainWindow):
         super(WormholeGui, self).__init__()
         self.app = app
         self.mainwindow = mainwindow
         self.setup_logger(logging.DEBUG)
+        self.setup_translator()
         self.config = configparser.ConfigParser()
         self.stats = Stats(callback_updated=self.show_stats)
         self.stargate = StarGate(self.config, self.stats, self.logger, self.got_secret_code)
@@ -69,6 +70,15 @@ class WormholeGui(QObject):
         txt.setFormatter(formatter)
         self.logger.addHandler(txt)
 
+    def setup_translator(self):
+        self.translator = QTranslator()
+        language_code = QLocale.system().name()
+        if self.translator.load("i18n/%s.qm" % language_code):
+            self.logger.debug("Loaded %s translation." % language_code)
+        else:
+            self.logger.warning("Translation file i18n/%s.qm not found." % language_code)
+        self.app.installTranslator(self.translator)
+        self.mainwindow.retranslateUi(self.mainwindow)
 
     def setup_controls(self):
         self.mainwindow.installEventFilter(self)
@@ -124,7 +134,7 @@ class WormholeGui(QObject):
 
         with open(self.config_filename, "w") as fp:
             self.config.write(fp)
-        self.mainwindow.statusbar.showMessage("Settings saved!", 5000)
+        self.mainwindow.statusbar.showMessage(self.translator.translate("StatusMessage", "Settings saved!"), 5000)
 
 
 
@@ -136,12 +146,12 @@ class WormholeGui(QObject):
 
     def allocate_code(self):
         self.logger.debug("Requesting secret code...")
-        self.mainwindow.statusbar.showMessage("Requesting secret code...", 5000)
+        self.mainwindow.statusbar.showMessage(self.translator.translate("StatusMessage", "Requesting secret code..."), 5000)
         self.stargate.allocate_code()
 
     def got_secret_code(self, code):
         self.logger.debug("Obtained secret code: " + code)
-        self.mainwindow.statusbar.showMessage("Secret code received!", 5000)
+        self.mainwindow.statusbar.showMessage(self.translator.translate("StatusMessage", "Secret code received!"), 5000)
         self.mainwindow.txtSecretCode.setText(code)
         self.update_wormhole_action_text()
 
@@ -171,12 +181,12 @@ class WormholeGui(QObject):
     def send_text(self):
         if self.stargate.code == "":
             QMessageBox.warning(self.mainwindow, "Wormhole GUI",
-                                "È necessario creare un codice segreto prima di trasmettere!",
+                                self.translator.translate("ErrorDialog", "È necessario creare un codice segreto prima di trasmettere!"),
                                 QMessageBox.Ok)
             return
         if self.mainwindow.txtMessage.toPlainText() == "":
             QMessageBox.warning(self.mainwindow, "Wormhole GUI",
-                                "Il campo messaggio è vuoto!",
+                                self.translator.translate("ErrorDialog", "Il campo messaggio è vuoto!"),
                                 QMessageBox.Ok)
             return
         self.stargate.send_message(self.mainwindow.txtMessage.toPlainText())
@@ -187,14 +197,14 @@ class WormholeGui(QObject):
 
     def browse_file(self):
         filename, _ = QFileDialog.getOpenFileName(self.mainwindow,
-                                                  "Seleziona un file",
+                                                  self.translator.translate("FilePicker", "Seleziona un file"),
                                                   "",
                                                   "All Files (*);")
         self.mainwindow.txtFileName.setText(filename)
 
     def browse_folder(self):
         foldername = QFileDialog.getExistingDirectory(self.mainwindow,
-                                                      "Seleziona una cartella",
+                                                      self.translator.translate("FilePicker", "Seleziona una cartella"),
                                                       "")
         self.mainwindow.txtFolderName.setText(foldername)
         self.save_settings()
@@ -204,35 +214,35 @@ class WormholeGui(QObject):
 
         if self.stargate.code == "":
             QMessageBox.warning(self.mainwindow, "Wormhole GUI",
-                                "È necessario creare un codice segreto prima di trasmettere!",
+                                self.translator.translate("ErrorDialog", "È necessario creare un codice segreto prima di trasmettere!"),
                                 QMessageBox.Ok)
             return
         if filename == "":
             QMessageBox.warning(self.mainwindow, "Wormhole GUI",
-                                "Il campo nome-file è vuoto!",
+                                self.translator.translate("ErrorDialog", "Il campo nome-file è vuoto!"),
                                 QMessageBox.Ok)
             return
         if not os.path.isfile(filename):
             QMessageBox.warning(self.mainwindow, "Wormhole GUI",
-                                "Il file selezionato non esiste!",
+                                self.translator.translate("ErrorDialog", "Il file selezionato non esiste!"),
                                 QMessageBox.Ok)
             return
 
         def progress_callback(percent, filename):
             self.mainwindow.progressSendFile.setValue(percent)
             if percent == 100:
-                self.mainwindow.statusbar.showMessage("Transfer complete!", 5000)
+                self.mainwindow.statusbar.showMessage(self.translator.translate("StatusMessage", "Transfer complete!"), 5000)
 
         self.stargate.progress_callback = progress_callback
 
-        self.mainwindow.statusbar.showMessage("Sending file...")
+        self.mainwindow.statusbar.showMessage(self.translator.translate("StatusMessage", "Sending file..."))
         self.stargate.send_file(self.mainwindow.txtFileName.text())
 
     def update_wormhole_action_text(self):
         if self.stargate.connected:
-            self.mainwindow.actionWormhole.setText("Disconnetti Wormhole")
+            self.mainwindow.actionWormhole.setText(self.translator.translate("MainWindow", "Disconnetti Wormhole"))
         else:
-            self.mainwindow.actionWormhole.setText("Connetti Wormhole")
+            self.mainwindow.actionWormhole.setText(self.translator.translate("MainWindow", "Connetti Wormhole"))
 
     def toggle_connect_wormhole(self):
         if self.stargate.connected:
@@ -248,12 +258,12 @@ class WormholeGui(QObject):
             self.mainwindow.txtMessageRecv.moveCursor(QTextCursor.End)
             self.mainwindow.txtMessageRecv.insertPlainText(msg + "\n")
             self.mainwindow.txtMessageRecv.moveCursor(QTextCursor.End)
-            self.mainwindow.statusbar.showMessage("Received text message", 5000)
+            self.mainwindow.statusbar.showMessage(self.translator.translate("StatusMessage", "Received text message"), 5000)
 
         def progress_callback(percent, filename):
             self.mainwindow.progressRecvFile.setValue(percent)
             if percent == 100:
-                self.mainwindow.statusbar.showMessage("Transfer complete!", 5000)
+                self.mainwindow.statusbar.showMessage(self.translator.translate("StatusMessage", "Transfer complete!"), 5000)
 
         def offered_callback(filename, filesize):
             self.mainwindow.lblRecvFileName.setText(os.path.basename(filename))
@@ -267,7 +277,7 @@ class WormholeGui(QObject):
         self.stargate.receive_any()
         if not self.set_code(True): return
 
-        self.mainwindow.statusbar.showMessage("Awaiting for peer...")
+        self.mainwindow.statusbar.showMessage(self.translator.translate("StatusMessage", "Awaiting for peer..."))
 
 
 
