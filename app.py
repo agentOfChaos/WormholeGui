@@ -8,10 +8,12 @@ from logging import StreamHandler
 from PySide2.QtCore import QEvent, QObject, QTranslator, QLocale
 from PySide2.QtWidgets import QMessageBox, QFileDialog, QMainWindow, QApplication
 from PySide2.QtGui import QTextCursor, QGuiApplication
+from langcodes import Language
 
 
 from stargate import StarGate
 from stats import Stats
+from utils import has_error_message
 from wormhole.errors import KeyFormatError
 
 
@@ -36,18 +38,23 @@ class WormholeGui(QObject):
     appname = "WormholeGui"
     appauthor = "WormholeGui"
 
+    translation_folder = "i18n"
+
     def __init__(self, app: QApplication, mainwindow: QMainWindow):
         super(WormholeGui, self).__init__()
         self.app = app
         self.mainwindow = mainwindow
+        self.available_languages = []
         self.setup_logger(logging.DEBUG)
-        self.setup_translator()
+
         self.config = configparser.ConfigParser()
+
         self.stats = Stats(callback_updated=self.show_stats)
         self.stargate = StarGate(self.config, self.stats, self.logger, self.got_secret_code)
-
-        self.setup_controls()
         self.load_config()
+
+        self.setup_translator()
+        self.setup_controls()
         self.show_config()
         self.show_stats(self.stats)
 
@@ -72,13 +79,19 @@ class WormholeGui(QObject):
 
     def setup_translator(self):
         self.translator = QTranslator()
-        language_code = QLocale.system().name()
-        if self.translator.load("i18n/%s.qm" % language_code):
+        language_code = self.config["app"]["language"]
+        if language_code == "systemdefault":
+            language_code = QLocale.system().name()
+        translation_filename = os.path.join(self.translation_folder, "%s.qm" % language_code)
+        if self.translator.load(translation_filename):
             self.logger.debug("Loaded %s translation." % language_code)
         else:
-            self.logger.warning("Translation file i18n/%s.qm not found." % language_code)
+            self.logger.warning("Translation file %s not found." % translation_filename)
         self.app.installTranslator(self.translator)
         self.mainwindow.retranslateUi(self.mainwindow)
+        self.available_languages = ["systemdefault"] + list(map(lambda fname: fname[:-3],
+                                                                filter(lambda fname: fname.endswith(".qm"),
+                                                                       os.listdir(self.translation_folder))))
 
     def setup_controls(self):
         self.mainwindow.installEventFilter(self)
@@ -97,6 +110,11 @@ class WormholeGui(QObject):
         self.mainwindow.actionWormhole.triggered.connect(self.toggle_connect_wormhole)
         self.mainwindow.actionOpenFile.triggered.connect(self.browse_file)
         self.mainwindow.actionQuit.triggered.connect(self.on_exit)
+
+        self.mainwindow.cmbLanguage.addItems(list(map(lambda langcode: Language.get(langcode).autonym(),
+                                                      self.available_languages[1:])))
+
+
 
     def eventFilter(self, obj, event):
         if obj is self.mainwindow and event.type() == QEvent.Close:
@@ -126,11 +144,24 @@ class WormholeGui(QObject):
         self.mainwindow.txtTransit.setText(self.config["wormhole"]["transit"])
         self.mainwindow.txtFolderName.setText(self.config["app"]["download_folder"])
 
+        langcode = self.config["app"]["language"]
+        if langcode == "systemdefault":
+            self.mainwindow.cmbLanguage.setCurrentIndex(0)
+        else:
+            allitems = [self.mainwindow.cmbLanguage.itemText(i) for i in range(self.mainwindow.cmbLanguage.count())]
+            try:
+                langindex = allitems.index(Language.get(langcode).autonym())
+                self.mainwindow.cmbLanguage.setCurrentIndex(langindex)
+            except ValueError:
+                self.mainwindow.cmbLanguage.setCurrentIndex(0)
+
+    @has_error_message
     def save_settings(self):
         self.config["wormhole"]["relay"] = self.mainwindow.txtRelay.text()
         self.config["wormhole"]["appid"] = self.mainwindow.txtAppID.text()
         self.config["wormhole"]["transit"] = self.mainwindow.txtTransit.text()
         self.config["app"]["download_folder"] = self.mainwindow.txtFolderName.text()
+        self.config["app"]["language"] = self.available_languages[self.mainwindow.cmbLanguage.currentIndex()]
 
         with open(self.config_filename, "w") as fp:
             self.config.write(fp)
@@ -143,7 +174,7 @@ class WormholeGui(QObject):
                                                                                         stats.files_sent,
                                                                                         stats.file_acks+stats.msgs_acks))
 
-
+    @has_error_message
     def allocate_code(self):
         self.logger.debug("Requesting secret code...")
         self.mainwindow.statusbar.showMessage(self.translator.translate("StatusMessage", "Requesting secret code..."), 5000)
@@ -155,15 +186,18 @@ class WormholeGui(QObject):
         self.mainwindow.txtSecretCode.setText(code)
         self.update_wormhole_action_text()
 
+    @has_error_message
     def copy_secret_code(self):
         cb = QGuiApplication.clipboard()
         cb.clear(mode=cb.Clipboard)
         cb.setText(self.mainwindow.txtSecretCode.text(), mode=cb.Clipboard)
 
+    @has_error_message
     def paste_secret_code(self):
         text = QGuiApplication.clipboard().text()
         self.mainwindow.txtSecretCodeRecv.setText(text)
 
+    @has_error_message
     def set_code(self, recv_mode=False):
         try:
             text = self.mainwindow.txtSecretCode.text()
@@ -177,7 +211,7 @@ class WormholeGui(QObject):
                                 QMessageBox.Ok)
             return False
 
-
+    @has_error_message
     def send_text(self):
         if self.stargate.code == "":
             QMessageBox.warning(self.mainwindow, "Wormhole GUI",
@@ -192,9 +226,11 @@ class WormholeGui(QObject):
         self.stargate.send_message(self.mainwindow.txtMessage.toPlainText())
         self.mainwindow.statusbar.showMessage("Sending text...", 5000)
 
+    @has_error_message
     def clear_received_text(self):
         self.mainwindow.txtMessageRecv.clear()
 
+    @has_error_message
     def browse_file(self):
         filename, _ = QFileDialog.getOpenFileName(self.mainwindow,
                                                   self.translator.translate("FilePicker", "Seleziona un file"),
@@ -202,6 +238,7 @@ class WormholeGui(QObject):
                                                   "All Files (*);")
         self.mainwindow.txtFileName.setText(filename)
 
+    @has_error_message
     def browse_folder(self):
         foldername = QFileDialog.getExistingDirectory(self.mainwindow,
                                                       self.translator.translate("FilePicker", "Seleziona una cartella"),
@@ -209,6 +246,7 @@ class WormholeGui(QObject):
         self.mainwindow.txtFolderName.setText(foldername)
         self.save_settings()
 
+    @has_error_message
     def send_file(self):
         filename = self.mainwindow.txtFileName.text()
 
@@ -244,6 +282,7 @@ class WormholeGui(QObject):
         else:
             self.mainwindow.actionWormhole.setText(self.translator.translate("MainWindow", "Connetti Wormhole"))
 
+    @has_error_message
     def toggle_connect_wormhole(self):
         if self.stargate.connected:
             self.stargate.disconnect()
@@ -251,6 +290,7 @@ class WormholeGui(QObject):
             self.stargate.connect()
         self.update_wormhole_action_text()
 
+    @has_error_message
     def recv_anything(self):
         def message_callback(msg):
             if not self.mainwindow.chkAppend.isChecked():

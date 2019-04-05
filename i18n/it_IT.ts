@@ -1,25 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.0" language="it_IT" sourcelanguage="it_IT">
-<context>
+<!DOCTYPE TS><TS version="2.0" language="it_IT" sourcelanguage="it_IT">
+<context encoding="UTF-8">
     <name>ErrorDialog</name>
-    <message utf8="true">
-        <location filename="../app.py" line="216"/>
+    <message encoding="UTF-8">
+        <location filename="../app.py" line="239"/>
         <source>È necessario creare un codice segreto prima di trasmettere!</source>
         <translation type="unfinished">È necessario creare un codice segreto prima di trasmettere!</translation>
     </message>
-    <message utf8="true">
-        <location filename="../app.py" line="188"/>
+    <message encoding="UTF-8">
+        <location filename="../app.py" line="211"/>
         <source>Il campo messaggio è vuoto!</source>
         <translation type="unfinished">Il campo messaggio è vuoto!</translation>
     </message>
-    <message utf8="true">
-        <location filename="../app.py" line="221"/>
+    <message encoding="UTF-8">
+        <location filename="../app.py" line="244"/>
         <source>Il campo nome-file è vuoto!</source>
         <translation type="unfinished">Il campo nome-file è vuoto!</translation>
     </message>
     <message>
-        <location filename="../app.py" line="226"/>
+        <location filename="../app.py" line="249"/>
         <source>Il file selezionato non esiste!</source>
         <translation type="unfinished">Il file selezionato non esiste!</translation>
     </message>
@@ -27,12 +26,12 @@
 <context>
     <name>FilePicker</name>
     <message>
-        <location filename="../app.py" line="199"/>
+        <location filename="../app.py" line="222"/>
         <source>Seleziona un file</source>
         <translation type="unfinished">Seleziona un file</translation>
     </message>
     <message>
-        <location filename="../app.py" line="206"/>
+        <location filename="../app.py" line="229"/>
         <source>Seleziona una cartella</source>
         <translation type="unfinished">Seleziona una cartella</translation>
     </message>
@@ -219,12 +218,12 @@ Trasferimento</translation>
         <translation type="unfinished">Default sistema</translation>
     </message>
     <message>
-        <location filename="../app.py" line="243"/>
+        <location filename="../app.py" line="266"/>
         <source>Disconnetti Wormhole</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../app.py" line="245"/>
+        <location filename="../app.py" line="268"/>
         <source>Connetti Wormhole</source>
         <translation type="unfinished"></translation>
     </message>
@@ -232,37 +231,37 @@ Trasferimento</translation>
 <context>
     <name>StatusMessage</name>
     <message>
-        <location filename="../app.py" line="137"/>
+        <location filename="../app.py" line="160"/>
         <source>Settings saved!</source>
         <translation type="unfinished">Impostazioni salvate!</translation>
     </message>
     <message>
-        <location filename="../app.py" line="149"/>
+        <location filename="../app.py" line="172"/>
         <source>Requesting secret code...</source>
         <translation type="unfinished">Richiesta codice segreto...</translation>
     </message>
     <message>
-        <location filename="../app.py" line="154"/>
+        <location filename="../app.py" line="177"/>
         <source>Secret code received!</source>
         <translation type="unfinished">Codice segreto ricevuto!</translation>
     </message>
     <message>
-        <location filename="../app.py" line="266"/>
+        <location filename="../app.py" line="289"/>
         <source>Transfer complete!</source>
         <translation type="unfinished">Trasferimento completato!</translation>
     </message>
     <message>
-        <location filename="../app.py" line="238"/>
+        <location filename="../app.py" line="261"/>
         <source>Sending file...</source>
         <translation type="unfinished">Invio file...</translation>
     </message>
     <message>
-        <location filename="../app.py" line="261"/>
+        <location filename="../app.py" line="284"/>
         <source>Received text message</source>
         <translation type="unfinished">Ricevuto messaggio di testo</translation>
     </message>
     <message>
-        <location filename="../app.py" line="280"/>
+        <location filename="../app.py" line="303"/>
         <source>Awaiting for peer...</source>
         <translation type="unfinished">Attesa del peer...</translation>
     </message>

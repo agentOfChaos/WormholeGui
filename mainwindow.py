@@ -3,7 +3,7 @@
 # Form implementation generated from reading ui file 'mainwindow.ui',
 # licensing of 'mainwindow.ui' applies.
 #
-# Created: Thu Apr  4 21:03:06 2019
+# Created: Fri Apr  5 19:20:24 2019
 #      by: pyside2-uic  running on PySide2 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -450,16 +450,16 @@ class Ui_MainWindow(object):
         self.label_6 = QtWidgets.QLabel(self.widget)
         self.label_6.setObjectName("label_6")
         self.formLayout.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label_6)
-        self.comboBox = QtWidgets.QComboBox(self.widget)
+        self.cmbLanguage = QtWidgets.QComboBox(self.widget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.comboBox.sizePolicy().hasHeightForWidth())
-        self.comboBox.setSizePolicy(sizePolicy)
-        self.comboBox.setMinimumSize(QtCore.QSize(150, 0))
-        self.comboBox.setObjectName("comboBox")
-        self.comboBox.addItem("")
-        self.formLayout.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.comboBox)
+        sizePolicy.setHeightForWidth(self.cmbLanguage.sizePolicy().hasHeightForWidth())
+        self.cmbLanguage.setSizePolicy(sizePolicy)
+        self.cmbLanguage.setMinimumSize(QtCore.QSize(150, 0))
+        self.cmbLanguage.setObjectName("cmbLanguage")
+        self.cmbLanguage.addItem("")
+        self.formLayout.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.cmbLanguage)
         self.gridLayout_4.addLayout(self.formLayout, 0, 0, 1, 1)
         self.gridLayout_7.addWidget(self.widget, 0, 0, 1, 1)
         self.widget1 = QtWidgets.QWidget(self.tabSettings)
@@ -554,7 +554,7 @@ class Ui_MainWindow(object):
         self.label_2.setText(QtWidgets.QApplication.translate("MainWindow", "App ID:", None, -1))
         self.label_7.setText(QtWidgets.QApplication.translate("MainWindow", "Transit relay:", None, -1))
         self.label_6.setText(QtWidgets.QApplication.translate("MainWindow", "Lingua:", None, -1))
-        self.comboBox.setItemText(0, QtWidgets.QApplication.translate("MainWindow", "Default sistema", None, -1))
+        self.cmbLanguage.setItemText(0, QtWidgets.QApplication.translate("MainWindow", "Default sistema", None, -1))
         self.btnSaveSetup.setText(QtWidgets.QApplication.translate("MainWindow", "Salva", None, -1))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabSettings), QtWidgets.QApplication.translate("MainWindow", "Setup", None, -1))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtWidgets.QApplication.translate("MainWindow", "Logging", None, -1))

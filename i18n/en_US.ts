@@ -1,40 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.0" language="en_US" sourcelanguage="it_IT">
-<context>
+<!DOCTYPE TS><TS version="2.0" language="en_US" sourcelanguage="it_IT">
+<context encoding="UTF-8">
     <name>ErrorDialog</name>
-    <message utf8="true">
-        <location filename="../app.py" line="216"/>
+    <message encoding="UTF-8">
+        <location filename="../app.py" line="239"/>
         <source>È necessario creare un codice segreto prima di trasmettere!</source>
-        <translation type="unfinished">You must create a secret code before transmitting!</translation>
+        <translation>You must create a secret code before transmitting!</translation>
     </message>
-    <message utf8="true">
-        <location filename="../app.py" line="188"/>
+    <message encoding="UTF-8">
+        <location filename="../app.py" line="211"/>
         <source>Il campo messaggio è vuoto!</source>
-        <translation type="unfinished">The message field is empty!</translation>
+        <translation>The message field is empty!</translation>
     </message>
-    <message utf8="true">
-        <location filename="../app.py" line="221"/>
+    <message encoding="UTF-8">
+        <location filename="../app.py" line="244"/>
         <source>Il campo nome-file è vuoto!</source>
-        <translation type="unfinished">The filename field is empty!</translation>
+        <translation>The filename field is empty!</translation>
     </message>
     <message>
-        <location filename="../app.py" line="226"/>
+        <location filename="../app.py" line="249"/>
         <source>Il file selezionato non esiste!</source>
-        <translation type="unfinished">The selected file does not exist!</translation>
+        <translation>The selected file does not exist!</translation>
     </message>
 </context>
 <context>
     <name>FilePicker</name>
     <message>
-        <location filename="../app.py" line="199"/>
+        <location filename="../app.py" line="222"/>
         <source>Seleziona un file</source>
-        <translation type="unfinished">Select a file</translation>
+        <translation>Select a file</translation>
     </message>
     <message>
-        <location filename="../app.py" line="206"/>
+        <location filename="../app.py" line="229"/>
         <source>Seleziona una cartella</source>
-        <translation type="unfinished">Select a folder</translation>
+        <translation>Select a folder</translation>
     </message>
 </context>
 <context>
@@ -47,224 +46,224 @@
     <message>
         <location filename="../mainwindow.ui" line="352"/>
         <source>Invia</source>
-        <translation type="unfinished">Send</translation>
+        <translation>Send</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="731"/>
         <source>Codice segreto</source>
-        <translation type="unfinished">Secret code</translation>
+        <translation>Secret code</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="104"/>
         <source>Imposta
 Manualmente</source>
-        <translation type="unfinished">Enter
+        <translation>Enter
 Manually</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="118"/>
         <source>Genera</source>
-        <translation type="unfinished">Generate</translation>
+        <translation>Generate</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="152"/>
         <source>Copia</source>
-        <translation type="unfinished">Copy</translation>
+        <translation>Copy</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="204"/>
         <source>Invia un file</source>
-        <translation type="unfinished">Send a file</translation>
+        <translation>Send a file</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="539"/>
         <source>Trasferimento</source>
-        <translation type="unfinished">Transfer progress</translation>
+        <translation>Transfer progress</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="231"/>
         <source>Selezione file</source>
-        <translation type="unfinished">File selection</translation>
+        <translation>File selection</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="519"/>
         <source>sfoglia</source>
-        <translation type="unfinished">Browse</translation>
+        <translation>Browse</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="339"/>
         <source>Invia un messaggio</source>
-        <translation type="unfinished">Send a message</translation>
+        <translation>Send a message</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="398"/>
         <source>Messages+Files: 0 | ACKs: 0</source>
-        <translation type="unfinished">Messages+Files: 0 | ACKs: 0</translation>
+        <translation>Messages+Files: 0 | ACKs: 0</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="412"/>
         <source>Ricevi</source>
-        <translation type="unfinished">Receive</translation>
+        <translation>Receive</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="487"/>
         <source>Dimensioni (bytes):</source>
-        <translation type="unfinished">Size (bytes):</translation>
+        <translation>Size (bytes):</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="553"/>
         <source>Ricezione file</source>
-        <translation type="unfinished">Received file</translation>
+        <translation>Received file</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="560"/>
         <source>Nome:</source>
-        <translation type="unfinished">Name:</translation>
+        <translation>Name:</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="570"/>
         <source>Directory destinazione:</source>
-        <translation type="unfinished">Destination folder:</translation>
+        <translation>Destination folder:</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="577"/>
         <source>Dettagli File:</source>
-        <translation type="unfinished">File details:</translation>
+        <translation>File details:</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="629"/>
         <source>Ricezione testo</source>
-        <translation type="unfinished">Received text</translation>
+        <translation>Received text</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="643"/>
         <source>Appendi</source>
-        <translation type="unfinished">Append</translation>
+        <translation>Append</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="653"/>
         <source>Svuota</source>
-        <translation type="unfinished">Clear</translation>
+        <translation>Clear</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="744"/>
         <source>Incolla</source>
-        <translation type="unfinished">Paste</translation>
+        <translation>Paste</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="757"/>
         <source>Conferma
 Trasferimento</source>
-        <translation type="unfinished">Confirm
+        <translation>Confirm
 Transfer</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="772"/>
         <source>Setup</source>
-        <translation type="unfinished">Setup</translation>
+        <translation>Setup</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="806"/>
         <source>Rendez-Vous relay:</source>
-        <translation type="unfinished">Rendez-Vous relay:</translation>
+        <translation>Rendez-Vous relay:</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="826"/>
         <source>App ID:</source>
-        <translation type="unfinished">App ID:</translation>
+        <translation>App ID:</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="836"/>
         <source>Transit relay:</source>
-        <translation type="unfinished">Transit relay:</translation>
+        <translation>Transit relay:</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="899"/>
         <source>Salva</source>
-        <translation type="unfinished">Save</translation>
+        <translation>Save</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="914"/>
         <source>Logging</source>
-        <translation type="unfinished">Logging</translation>
+        <translation>Logging</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="943"/>
         <source>File</source>
-        <translation type="unfinished">File</translation>
+        <translation>File</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="954"/>
         <source>Connetti wormhole</source>
-        <translation type="unfinished">Connect wormhole</translation>
+        <translation>Connect wormhole</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="959"/>
         <source>Seleziona file...</source>
-        <translation type="unfinished">File selection...</translation>
+        <translation>File selection...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="964"/>
         <source>Esci</source>
-        <translation type="unfinished">Quit</translation>
+        <translation>Quit</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="846"/>
         <source>Lingua:</source>
-        <translation type="unfinished">Language:</translation>
+        <translation>Language:</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="866"/>
         <source>Default sistema</source>
-        <translation type="unfinished">System default</translation>
+        <translation>System default</translation>
     </message>
     <message>
-        <location filename="../app.py" line="243"/>
+        <location filename="../app.py" line="266"/>
         <source>Disconnetti Wormhole</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../app.py" line="245"/>
+        <location filename="../app.py" line="268"/>
         <source>Connetti Wormhole</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
 </context>
 <context>
     <name>StatusMessage</name>
     <message>
-        <location filename="../app.py" line="137"/>
+        <location filename="../app.py" line="160"/>
         <source>Settings saved!</source>
-        <translation type="unfinished">Settings saved!</translation>
+        <translation>Settings saved!</translation>
     </message>
     <message>
-        <location filename="../app.py" line="149"/>
+        <location filename="../app.py" line="172"/>
         <source>Requesting secret code...</source>
-        <translation type="unfinished">Requesting secret code...</translation>
+        <translation>Requesting secret code...</translation>
     </message>
     <message>
-        <location filename="../app.py" line="154"/>
+        <location filename="../app.py" line="177"/>
         <source>Secret code received!</source>
-        <translation type="unfinished">Secret code received!</translation>
+        <translation>Secret code received!</translation>
     </message>
     <message>
-        <location filename="../app.py" line="266"/>
+        <location filename="../app.py" line="289"/>
         <source>Transfer complete!</source>
-        <translation type="unfinished">Transfer complete!</translation>
-    </message>
-    <message>
-        <location filename="../app.py" line="238"/>
-        <source>Sending file...</source>
-        <translation type="unfinished">Sending file...</translation>
+        <translation>Transfer complete!</translation>
     </message>
     <message>
         <location filename="../app.py" line="261"/>
-        <source>Received text message</source>
-        <translation type="unfinished">Received text message</translation>
+        <source>Sending file...</source>
+        <translation>Sending file...</translation>
     </message>
     <message>
-        <location filename="../app.py" line="280"/>
+        <location filename="../app.py" line="284"/>
+        <source>Received text message</source>
+        <translation>Received text message</translation>
+    </message>
+    <message>
+        <location filename="../app.py" line="303"/>
         <source>Awaiting for peer...</source>
-        <translation type="unfinished">Awaiting for peer...</translation>
+        <translation>Awaiting for peer...</translation>
     </message>
 </context>
 </TS>
