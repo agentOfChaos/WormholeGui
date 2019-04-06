@@ -1,7 +1,10 @@
-qt5reactor==0.5
-magic_wormhole==0.11.2
-autobahn==19.1.1
 appdirs==1.4.3
+magic_wormhole==0.11.2
+langcodes==1.4.1
+qt5reactor==0.5
+autobahn==19.1.1
 PySide2==5.12.2
+cx_Freeze==5.1.1
+secrets==1.0.2
 Twisted==18.9.0
 wormhole==0.1.0
