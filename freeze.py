@@ -13,10 +13,12 @@ if sys.platform == 'win32':
 
 options = {
     'build_exe': {
-        'includes': 'atexit,cffi',
+        'includes': 'atexit,cffi,PySide2.QtXml',
+        'packages': 'packaging',
         'namespace_packages': 'zope',
-        'include_files': [("mainwindow.ui", "mainwindow.ui"),
-                          ("i18n/", "i18n/")],
+        'include_files': [("custom_ui/", "custom_ui/")],
+        'zip_include_packages': 'PySide2',
+        'optimize': 2,
     }
 }
 
