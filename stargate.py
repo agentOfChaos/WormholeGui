@@ -59,6 +59,15 @@ class StarGate:
         self.connected = False
         self.receive_mode = False
 
+    @property
+    def connected(self):
+        return self.stats.wormhole_connected
+
+    @connected.setter
+    def connected(self, value):
+        self.stats.wormhole_connected = value
+
+
     def connect(self):
         self.logger.info("Connecting to relay: %s" % self.config["wormhole"]["relay"])
         self.wormhole = wormhole.create(self.config["wormhole"]["appid"],
@@ -92,6 +101,7 @@ class StarGate:
         def closure():
             self.inner_send_message(data)
         self.logger.info("Waiting for peer...")
+        self.stats.waiting_peer = True
         self.got_peer_callback = closure
         self.check_peer_available()
 
@@ -104,11 +114,13 @@ class StarGate:
         def closure():
             self.inner_send_file(filepath)
         self.logger.info("Waiting for peer...")
+        self.stats.waiting_peer = True
         self.got_peer_callback = closure
         self.check_peer_available()
 
     @inlineCallbacks
     def inner_send_file(self, filepath: str):
+        self.stats.upload_running = True
         self.transit_sender = TransitSender(self.config["wormhole"]["transit"], no_listen=True, reactor=self.reactor)
         sender_abilities = self.transit_sender.get_connection_abilities()
         sender_hints = yield self.transit_sender.get_connection_hints()
@@ -181,6 +193,8 @@ class StarGate:
                     self.reset_transfer()
                     return
             self.logger.info("Confirmation received. Transfer complete.")
+            self.stats.upload_running = False
+            self.stats.peer_connected = False
             self.reset_transfer()
 
     def reset_transfer(self):
@@ -200,6 +214,7 @@ class StarGate:
 
     def wormhole_got_code(self, code):
         self.code = code
+        self.stats.code_locked = True
         if self.code_callback is not None: self.code_callback(code)
 
     def wormhole_got_message(self, msg):  # called for each message
@@ -230,6 +245,7 @@ class StarGate:
         if self.got_verifier and self.got_unverified_key:
             if self.got_peer_callback is not None:
                 self.logger.info("Peer connected!")
+                self.stats.peer_connected = True
                 self.got_peer_callback()
                 self.got_peer_callback = None
                 self.got_unverified_key = False
@@ -263,6 +279,7 @@ class StarGate:
         if "message_ack" in answer:
             if answer["message_ack"] == "ok":
                 self.stats.msgs_acks += 1
+                self.stats.peer_connected = False
         if "file_ack" in answer:
             if answer["file_ack"] == "ok":
                 self.stats.file_acks += 1
@@ -281,7 +298,9 @@ class StarGate:
             if self.message_callback is not None:
                 self.message_callback(offer["message"])
             self.send_data({"answer": {"message_ack": "ok"}})
+            self.stats.peer_connected = False
         if "file" in offer:
+            self.stats.download_running = True
             self.file_to_receive = os.path.join(self.config["app"]["download_folder"], offer["file"]["filename"])
             self.filesize_to_receive = int(offer["file"]["filesize"])
 
@@ -324,6 +343,8 @@ class StarGate:
                 yield record_pipe.close()
 
                 self.logger.info("Done receiving data!")
+            self.stats.download_running = False
+            self.stats.peer_connected = False
 
         self.wants_offer = False
 

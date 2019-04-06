@@ -15,7 +15,8 @@ options = {
     'build_exe': {
         'includes': 'atexit,cffi',
         'namespace_packages': 'zope',
-        'include_files': [("mainwindow.ui", "mainwindow.ui")],
+        'include_files': [("mainwindow.ui", "mainwindow.ui"),
+                          ("i18n/", "i18n/")],
     }
 }
 

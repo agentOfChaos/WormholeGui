@@ -4,17 +4,19 @@ import appdirs
 import os
 import sys
 import logging
+import secrets
 from logging import StreamHandler
-from PySide2.QtCore import QEvent, QObject, QTranslator, QLocale
-from PySide2.QtWidgets import QMessageBox, QFileDialog, QMainWindow, QApplication
+from PySide2.QtCore import QEvent, QObject, QTranslator, QLocale, QStringListModel
+from PySide2.QtWidgets import QMessageBox, QFileDialog, QMainWindow, QApplication, QCompleter
 from PySide2.QtGui import QTextCursor, QGuiApplication
 from langcodes import Language
 
 
 from stargate import StarGate
 from stats import Stats
-from utils import has_error_message
+from utils import has_error_message, init_label_opacity
 from wormhole.errors import KeyFormatError
+from wormhole._wordlist import raw_words as pgp_words
 
 
 class CustomLogHandler(StreamHandler):
@@ -39,12 +41,19 @@ class WormholeGui(QObject):
     appauthor = "WormholeGui"
 
     translation_folder = "i18n"
+    wordlist_folder = "wordlist"
+
+    opacity_off = 0.15
+
 
     def __init__(self, app: QApplication, mainwindow: QMainWindow):
         super(WormholeGui, self).__init__()
         self.app = app
         self.mainwindow = mainwindow
+        self.opacity_filters = {}
         self.available_languages = []
+        self.code_wordlist = []
+        self.num_codewords = 3
         self.setup_logger(logging.DEBUG)
 
         self.config = configparser.ConfigParser()
@@ -92,8 +101,28 @@ class WormholeGui(QObject):
         self.available_languages = ["systemdefault"] + list(map(lambda fname: fname[:-3],
                                                                 filter(lambda fname: fname.endswith(".qm"),
                                                                        os.listdir(self.translation_folder))))
+        self.code_wordlist = []
+        for bite, pair in pgp_words.items():
+            self.code_wordlist.extend(pair)
+
+        wordlist_filename = os.path.join(self.wordlist_folder, "%s.txt" % language_code)
+        if os.path.isfile(wordlist_filename):
+            with open(wordlist_filename, "r") as fp:
+                self.code_wordlist = list(filter(lambda i: len(i.strip()) > 0,
+                                                 fp.read().split("\n")))
+            self.logger.debug("Loaded %s wordlist." % wordlist_filename)
+        else:
+            self.logger.warning("Wordlist file %s not found." % wordlist_filename)
+
 
     def setup_controls(self):
+        init_label_opacity(self, self.mainwindow.lblHasWormhole, self.opacity_off)
+        init_label_opacity(self, self.mainwindow.lblHasCode, self.opacity_off)
+        init_label_opacity(self, self.mainwindow.lblHasPeer, self.opacity_off)
+        init_label_opacity(self, self.mainwindow.lblHasDownload, self.opacity_off)
+        init_label_opacity(self, self.mainwindow.lblHasUpload, self.opacity_off)
+        init_label_opacity(self, self.mainwindow.lblHasWait, self.opacity_off)
+
         self.mainwindow.installEventFilter(self)
         self.mainwindow.btnSaveSetup.clicked.connect(self.save_settings)
         self.mainwindow.btnGenerateCode.clicked.connect(self.allocate_code)
@@ -114,7 +143,11 @@ class WormholeGui(QObject):
         self.mainwindow.cmbLanguage.addItems(list(map(lambda langcode: Language.get(langcode).autonym(),
                                                       self.available_languages[1:])))
 
-
+        self.mainwindow.txtSecretCodeRecv.textEdited.connect(self.suggest_code)
+        completer = QCompleter()
+        model = QStringListModel()
+        completer.setModel(model)
+        self.mainwindow.txtSecretCodeRecv.setCompleter(completer)
 
     def eventFilter(self, obj, event):
         if obj is self.mainwindow and event.type() == QEvent.Close:
@@ -167,18 +200,25 @@ class WormholeGui(QObject):
             self.config.write(fp)
         self.mainwindow.statusbar.showMessage(self.translator.translate("StatusMessage", "Settings saved!"), 5000)
 
-
-
     def show_stats(self, stats: Stats):
-        self.mainwindow.txtProgressSend.setText("Messages: %d   |   Files: %d   |   ACKs: %d" % (stats.msgs_sent,
-                                                                                        stats.files_sent,
-                                                                                        stats.file_acks+stats.msgs_acks))
+        try:
+            self.opacity_filters[self.mainwindow.lblHasWormhole].setOpacity(1.0 if stats.wormhole_connected else self.opacity_off)
+            self.opacity_filters[self.mainwindow.lblHasCode].setOpacity(1.0 if stats.code_locked else self.opacity_off)
+            self.opacity_filters[self.mainwindow.lblHasPeer].setOpacity(1.0 if stats.peer_connected else self.opacity_off)
+            self.opacity_filters[self.mainwindow.lblHasDownload].setOpacity(1.0 if stats.download_running else self.opacity_off)
+            self.opacity_filters[self.mainwindow.lblHasUpload].setOpacity(1.0 if stats.upload_running else self.opacity_off)
+            self.opacity_filters[self.mainwindow.lblHasWait].setOpacity(1.0 if stats.waiting_peer else self.opacity_off)
+        except KeyError:
+            pass
+
+    def generate_random_code(self, numwords=3):
+        return str(secrets.randbelow(1000)) + "-" + "-".join([secrets.choice(self.code_wordlist) for _ in range(numwords)])
 
     @has_error_message
-    def allocate_code(self):
-        self.logger.debug("Requesting secret code...")
-        self.mainwindow.statusbar.showMessage(self.translator.translate("StatusMessage", "Requesting secret code..."), 5000)
-        self.stargate.allocate_code()
+    def allocate_code(self,  recv_mode=False):
+        textfield = self.mainwindow.txtSecretCode
+        if recv_mode: textfield = self.mainwindow.txtSecretCodeRecv
+        textfield.setText(self.generate_random_code(self.num_codewords))
 
     def got_secret_code(self, code):
         self.logger.debug("Obtained secret code: " + code)
@@ -199,6 +239,8 @@ class WormholeGui(QObject):
 
     @has_error_message
     def set_code(self, recv_mode=False):
+        self.logger.debug("Requesting secret code...")
+        self.mainwindow.statusbar.showMessage(self.translator.translate("StatusMessage", "Requesting secret code..."), 5000)
         try:
             text = self.mainwindow.txtSecretCode.text()
             if recv_mode: text = self.mainwindow.txtSecretCodeRecv.text()
@@ -210,6 +252,29 @@ class WormholeGui(QObject):
                                 str(e),
                                 QMessageBox.Ok)
             return False
+
+    def generate_code_completion(self, partial):
+        pieces = partial.split("-")
+        last_piece = pieces[-1:][0]
+        if last_piece == "":
+            return []
+        if len(pieces) <= 1:
+            return []
+        if last_piece in self.code_wordlist:
+            return []
+
+        candidates = list(filter(lambda i: i.startswith(last_piece),
+                                 self.code_wordlist))
+        trailer = "-"
+        if len(pieces) >= int(self.config["app"]["num_codewords"])+1:
+            trailer = ""
+
+        return list(map(lambda c: "-".join(pieces[:-1]) + "-" + c + trailer,
+                        candidates))
+
+    def suggest_code(self, partial):
+        model = self.mainwindow.txtSecretCodeRecv.completer().model()
+        model.setStringList(self.generate_code_completion(partial))
 
     @has_error_message
     def send_text(self):

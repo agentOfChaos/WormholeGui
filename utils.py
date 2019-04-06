@@ -1,5 +1,5 @@
 import traceback
-from PySide2.QtWidgets import QMessageBox
+from PySide2.QtWidgets import QMessageBox, QGraphicsOpacityEffect
 
 
 def has_error_message(old_function):
@@ -15,3 +15,9 @@ def has_error_message(old_function):
             return None
 
     return wrapper
+
+
+def init_label_opacity(app, label, initial_opacity=1.0):
+    app.opacity_filters[label] = QGraphicsOpacityEffect()
+    label.setGraphicsEffect(app.opacity_filters[label])
+    app.opacity_filters[label].setOpacity(initial_opacity)
