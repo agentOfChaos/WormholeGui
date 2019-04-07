@@ -93,6 +93,7 @@ class Stats:
             self._code_locked = False
             self._download_running = False
             self._upload_running = False
+            self._waiting_peer = False
         if self.callback_updated is not None: self.callback_updated(self)
 
     @peer_connected.setter

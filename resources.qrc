@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="newPrefix">
+    <file>icons/process-stop.png</file>
     <file>icons/hourglass-2.png</file>
     <file>icons/mail-send.png</file>
     <file>icons/download.png</file>

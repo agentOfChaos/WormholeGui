@@ -6,6 +6,7 @@ import hashlib
 from binascii import hexlify
 from time import sleep
 
+from twisted.internet.error import ConnectionClosed
 from twisted.internet.defer import inlineCallbacks
 from wormhole.transit import TransitSender, TransitReceiver
 from twisted.protocols import basic
@@ -48,6 +49,8 @@ class StarGate:
         self.reactor = reactor
         self.transit_sender = None
         self.transit_receiver = None
+        self.file_sender = None
+        self.fp = None
         self.file_to_send = ""
         self.file_to_receive = ""
         self.filesize_to_receive = 0
@@ -78,8 +81,6 @@ class StarGate:
 
     def disconnect(self):
         self.wormhole.close()
-        self.connected = False
-        self.logger.info("Disconnected from relay")
 
     def reconnect_as_needed(self):
         if self.connected:
@@ -160,18 +161,25 @@ class StarGate:
 
             hasher = hashlib.sha256()
 
-            total_transferred = 0
+            total_transferred = [0]
             count_and_hash = lambda data: _count_and_hash(data, total_transferred)
 
             def _count_and_hash(data, total_transferred):
                 hasher.update(data)
-                total_transferred = total_transferred + len(data)
-                if self.progress_callback is not None: self.progress_callback((total_transferred*100)/filesize, self.file_to_send)
+                total_transferred[0] = total_transferred[0] + len(data)
+                if self.progress_callback is not None: self.progress_callback(total_transferred[0], filesize, self.file_to_send)
                 return data
 
             self.logger.info("Transmitting file...")
-            fs = basic.FileSender()
-            yield fs.beginFileTransfer(fp, record_pipe, transform=count_and_hash)
+            self.file_sender = basic.FileSender()
+            try:
+                yield self.file_sender.beginFileTransfer(fp, record_pipe, transform=count_and_hash)
+            except Exception:
+                self.warning.info("Transfer interrupted.")
+                self.stats.upload_running = False
+                self.stats.peer_connected = False
+                self.reset_transfer()
+                return
 
             expected_hash = hasher.digest()
             expected_hex = bytes_to_hexstr(expected_hash)
@@ -239,7 +247,8 @@ class StarGate:
         self.check_peer_available()
 
     def wormhole_closed(self, result):
-        pass
+        self.connected = False
+        self.logger.info("Wormhole got closed: " + str(result))
 
     def check_peer_available(self):
         if self.got_verifier and self.got_unverified_key:
@@ -323,26 +332,30 @@ class StarGate:
             record_pipe = yield self.transit_receiver.connect()
             self.logger.info("Receiving (%s).." % record_pipe.describe())
 
-            total_transferred = 0
+            total_transferred = [0]
             count_and_hash = lambda partial_transferred: _count_and_hash(partial_transferred, total_transferred)
 
             def _count_and_hash(partial_transferred, total_transferred):
-                total_transferred = total_transferred + partial_transferred
-                if self.progress_callback is not None: self.progress_callback((total_transferred * 100) / self.filesize_to_receive,
+                total_transferred[0] = total_transferred[0] + partial_transferred
+                if self.progress_callback is not None: self.progress_callback(total_transferred[0], self.filesize_to_receive,
                                                                               self.file_to_receive)
                 return partial_transferred
 
             self.logger.info("Receiving data...")
             hasher = hashlib.sha256()
-            with open(self.file_to_receive, "wb") as fp:
-                received = yield record_pipe.writeToFile(fp, self.filesize_to_receive, count_and_hash, hasher.update)
-                datahash = hasher.digest()
-                datahash_hex = bytes_to_hexstr(datahash)
-                ack = {"ack": "ok", "sha256": datahash_hex}
-                yield record_pipe.send_record(json.dumps(ack).encode("utf-8"))
+            with open(self.file_to_receive, "wb") as self.fp:
+                try:
+                    received = yield record_pipe.writeToFile(self.fp, self.filesize_to_receive, count_and_hash, hasher.update)
+                    datahash = hasher.digest()
+                    datahash_hex = bytes_to_hexstr(datahash)
+                    ack = {"ack": "ok", "sha256": datahash_hex}
+                    yield record_pipe.send_record(json.dumps(ack).encode("utf-8"))
+                except ConnectionClosed:
+                    self.logger.warning("Connection lost, transfer interrupted.")
                 yield record_pipe.close()
 
                 self.logger.info("Done receiving data!")
+            self.fp = None
             self.stats.download_running = False
             self.stats.peer_connected = False
 
@@ -369,4 +382,23 @@ class StarGate:
         self.wants_offer = True
         self.receive_mode = True
 
-
+    def stop_all(self):
+        self.reset_transfer()
+        if self.fp is not None:
+            self.fp.close()
+        try:
+            self.file_sender.stopProducing()
+        except AttributeError:
+            pass
+        try:
+            self.transit_receiver.close()
+        except AttributeError:
+            pass
+        try:
+            self.transit_sender.close()
+        except AttributeError:
+            pass
+        try:
+            self.wormhole.close()
+        except AttributeError:
+            pass
