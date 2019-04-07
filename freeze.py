@@ -16,7 +16,8 @@ options = {
         'includes': 'atexit,cffi,PySide2.QtXml',
         'packages': 'packaging',
         'namespace_packages': 'zope',
-        'include_files': [("custom_ui/", "custom_ui/")],
+        'include_files': [("custom_ui/", "custom_ui/"),
+                          ("i18n/","i18n/")],
         'zip_include_packages': 'PySide2',
         'optimize': 2,
     }
