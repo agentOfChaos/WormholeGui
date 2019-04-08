@@ -1,5 +1,11 @@
 <RCC>
   <qresource prefix="newPrefix">
+    <file>icons/dialog-ok-apply-6.png</file>
+    <file>icons/dialog-cancel-2.png</file>
+    <file>icons/utilities-log_viewer.png</file>
+    <file>icons/preferences-system-4.png</file>
+    <file>icons/mail-receive.png</file>
+    <file>icons/mail-outbox.png</file>
     <file>icons/process-stop.png</file>
     <file>icons/hourglass-2.png</file>
     <file>icons/mail-send.png</file>

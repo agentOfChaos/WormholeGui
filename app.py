@@ -124,6 +124,8 @@ class WormholeGui(QObject):
         init_label_opacity(self, self.mainwindow.lblHasDownload, self.opacity_off)
         init_label_opacity(self, self.mainwindow.lblHasUpload, self.opacity_off)
         init_label_opacity(self, self.mainwindow.lblHasWait, self.opacity_off)
+        init_label_opacity(self, self.mainwindow.lblHasSuccess, self.opacity_off)
+        init_label_opacity(self, self.mainwindow.lblHasFailure, self.opacity_off)
 
         self.mainwindow.installEventFilter(self)
         self.mainwindow.btnSaveSetup.clicked.connect(self.save_settings)
@@ -211,6 +213,8 @@ class WormholeGui(QObject):
             self.opacity_filters[self.mainwindow.lblHasDownload].setOpacity(1.0 if stats.download_running else self.opacity_off)
             self.opacity_filters[self.mainwindow.lblHasUpload].setOpacity(1.0 if stats.upload_running else self.opacity_off)
             self.opacity_filters[self.mainwindow.lblHasWait].setOpacity(1.0 if stats.waiting_peer else self.opacity_off)
+            self.opacity_filters[self.mainwindow.lblHasFailure].setOpacity(1.0 if stats.last_transfer_fail else self.opacity_off)
+            self.opacity_filters[self.mainwindow.lblHasSuccess].setOpacity(1.0 if stats.last_transfer_ok else self.opacity_off)
         except KeyError:
             pass
 

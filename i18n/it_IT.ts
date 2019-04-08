@@ -4,22 +4,22 @@
 <context>
     <name>ErrorDialog</name>
     <message utf8="true">
-        <location filename="../app.py" line="323"/>
+        <location filename="../app.py" line="326"/>
         <source>È necessario creare un codice segreto prima di trasmettere!</source>
         <translation>È necessario creare un codice segreto prima di trasmettere!</translation>
     </message>
     <message utf8="true">
-        <location filename="../app.py" line="291"/>
+        <location filename="../app.py" line="294"/>
         <source>Il campo messaggio è vuoto!</source>
         <translation>Il campo messaggio è vuoto!</translation>
     </message>
     <message utf8="true">
-        <location filename="../app.py" line="328"/>
+        <location filename="../app.py" line="331"/>
         <source>Il campo nome-file è vuoto!</source>
         <translation>Il campo nome-file è vuoto!</translation>
     </message>
     <message>
-        <location filename="../app.py" line="333"/>
+        <location filename="../app.py" line="336"/>
         <source>Il file selezionato non esiste!</source>
         <translation>Il file selezionato non esiste!</translation>
     </message>
@@ -27,12 +27,12 @@
 <context>
     <name>FilePicker</name>
     <message>
-        <location filename="../app.py" line="304"/>
+        <location filename="../app.py" line="307"/>
         <source>Seleziona un file</source>
         <translation>Seleziona un file</translation>
     </message>
     <message>
-        <location filename="../app.py" line="312"/>
+        <location filename="../app.py" line="315"/>
         <source>Seleziona una cartella</source>
         <translation>Seleziona una cartella</translation>
     </message>
@@ -45,12 +45,12 @@
         <translation>MainWindow</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="409"/>
+        <location filename="../mainwindow.ui" line="419"/>
         <source>Invia</source>
         <translation>Invia</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="834"/>
+        <location filename="../mainwindow.ui" line="848"/>
         <source>Codice segreto</source>
         <translation>Codice segreto</translation>
     </message>
@@ -62,37 +62,37 @@ Manualmente</source>
 Manualmente</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="118"/>
+        <location filename="../mainwindow.ui" line="128"/>
         <source>Genera</source>
         <translation>Genera</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="155"/>
+        <location filename="../mainwindow.ui" line="165"/>
         <source>Copia</source>
         <translation>Copia</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="280"/>
+        <location filename="../mainwindow.ui" line="290"/>
         <source>Invia un file</source>
         <translation>Invia un file</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="582"/>
+        <location filename="../mainwindow.ui" line="596"/>
         <source>Trasferimento</source>
         <translation>Trasferimento</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="233"/>
+        <location filename="../mainwindow.ui" line="243"/>
         <source>Selezione file</source>
         <translation>Selezione file</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="514"/>
+        <location filename="../mainwindow.ui" line="528"/>
         <source>sfoglia</source>
         <translation>sfoglia</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="396"/>
+        <location filename="../mainwindow.ui" line="406"/>
         <source>Invia un messaggio</source>
         <translation>Invia un messaggio</translation>
     </message>
@@ -102,249 +102,269 @@ Manualmente</translation>
         <translation type="obsolete">Messages+Files: 0 | ACKs: 0</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="444"/>
+        <location filename="../mainwindow.ui" line="458"/>
         <source>Ricevi</source>
         <translation>Ricevi</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="558"/>
+        <location filename="../mainwindow.ui" line="572"/>
         <source>Dimensioni (bytes):</source>
         <translation>Dimensioni (bytes):</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="575"/>
+        <location filename="../mainwindow.ui" line="589"/>
         <source>Ricezione file</source>
         <translation>Ricezione file</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="548"/>
+        <location filename="../mainwindow.ui" line="562"/>
         <source>Nome:</source>
         <translation>Nome:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="602"/>
+        <location filename="../mainwindow.ui" line="616"/>
         <source>Directory destinazione:</source>
         <translation>Directory destinazione:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="541"/>
+        <location filename="../mainwindow.ui" line="555"/>
         <source>Dettagli File:</source>
         <translation>Dettagli File:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="760"/>
+        <location filename="../mainwindow.ui" line="774"/>
         <source>Ricezione testo</source>
         <translation>Ricezione testo</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="730"/>
+        <location filename="../mainwindow.ui" line="744"/>
         <source>Appendi</source>
         <translation>Appendi</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="716"/>
+        <location filename="../mainwindow.ui" line="730"/>
         <source>Svuota</source>
         <translation>Svuota</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="847"/>
+        <location filename="../mainwindow.ui" line="861"/>
         <source>Incolla</source>
         <translation>Incolla</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="860"/>
+        <location filename="../mainwindow.ui" line="874"/>
         <source>Conferma
 Trasferimento</source>
         <translation>Conferma
 Trasferimento</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="875"/>
+        <location filename="../mainwindow.ui" line="893"/>
         <source>Setup</source>
         <translation>Setup</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="901"/>
+        <location filename="../mainwindow.ui" line="919"/>
         <source>Rendez-Vous relay:</source>
         <translation>Rendez-Vous relay:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="931"/>
+        <location filename="../mainwindow.ui" line="949"/>
         <source>App ID:</source>
         <translation>App ID:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="921"/>
+        <location filename="../mainwindow.ui" line="939"/>
         <source>Transit relay:</source>
         <translation>Transit relay:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="993"/>
+        <location filename="../mainwindow.ui" line="1011"/>
         <source>Salva</source>
         <translation>Salva</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1006"/>
+        <location filename="../mainwindow.ui" line="1028"/>
         <source>Logging</source>
         <translation>Logging</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1168"/>
+        <location filename="../mainwindow.ui" line="1210"/>
         <source>File</source>
         <translation>File</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1179"/>
+        <location filename="../mainwindow.ui" line="1221"/>
         <source>Connetti wormhole</source>
         <translation>Connetti wormhole</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1184"/>
+        <location filename="../mainwindow.ui" line="1226"/>
         <source>Seleziona file...</source>
         <translation>Seleziona file...</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1189"/>
+        <location filename="../mainwindow.ui" line="1231"/>
         <source>Esci</source>
         <translation>Esci</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="941"/>
+        <location filename="../mainwindow.ui" line="959"/>
         <source>Lingua:</source>
         <translation>Lingua:</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="961"/>
+        <location filename="../mainwindow.ui" line="979"/>
         <source>Default sistema</source>
         <translation>Default sistema</translation>
     </message>
     <message>
-        <location filename="../app.py" line="359"/>
+        <location filename="../app.py" line="362"/>
         <source>Disconnetti Wormhole</source>
         <translation>Disconnetti Wormhole</translation>
     </message>
     <message>
-        <location filename="../app.py" line="361"/>
+        <location filename="../app.py" line="364"/>
         <source>Connetti Wormhole</source>
         <translation>Connetti Wormhole</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="104"/>
+        <location filename="../mainwindow.ui" line="114"/>
         <source>Conferma
 Codice</source>
         <translation>Conferma
 Codice</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1047"/>
+        <location filename="../mainwindow.ui" line="1069"/>
         <source>Wormhole connected</source>
         <translation>Wormhole connesso</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1050"/>
+        <location filename="../mainwindow.ui" line="1072"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/newPrefix/icons/network-globe.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1063"/>
+        <location filename="../mainwindow.ui" line="1085"/>
         <source>Secret code locked</source>
         <translation>Codice segreto inserito</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1066"/>
+        <location filename="../mainwindow.ui" line="1088"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/newPrefix/icons/application-x-octet-stream.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1073"/>
+        <location filename="../mainwindow.ui" line="1095"/>
         <source>Waiting for peer</source>
         <translation>Attesa peer</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1076"/>
+        <location filename="../mainwindow.ui" line="1098"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/newPrefix/icons/hourglass-2.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1083"/>
+        <location filename="../mainwindow.ui" line="1105"/>
         <source>Peer connected</source>
         <translation>Peer connesso</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1086"/>
+        <location filename="../mainwindow.ui" line="1108"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/newPrefix/icons/user-group-new-2.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1093"/>
+        <location filename="../mainwindow.ui" line="1115"/>
         <source>Download in progress</source>
         <translation>Download in corso</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1096"/>
+        <location filename="../mainwindow.ui" line="1118"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/newPrefix/icons/download.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1103"/>
+        <location filename="../mainwindow.ui" line="1125"/>
         <source>Upload in progress</source>
         <translation>Upload in corso</translation>
     </message>
     <message>
-        <location filename="../mainwindow.ui" line="1106"/>
+        <location filename="../mainwindow.ui" line="1128"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/newPrefix/icons/mail-send.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../app.py" line="348"/>
+        <location filename="../app.py" line="351"/>
         <source>Inviati: </source>
         <translation>Inviati: </translation>
     </message>
     <message utf8="true">
-        <location filename="../app.py" line="390"/>
+        <location filename="../app.py" line="393"/>
         <source>Velocità: </source>
         <translation>Velocità: </translation>
     </message>
     <message>
-        <location filename="../app.py" line="391"/>
+        <location filename="../app.py" line="394"/>
         <source>Ricevuti: </source>
         <translation>Received: </translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="1135"/>
+        <source>Transfer succesful</source>
+        <translation>Trasferimento completato</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="1138"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/newPrefix/icons/dialog-ok-apply-6.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="1145"/>
+        <source>Transfer failure</source>
+        <translation>Trasferimento fallito</translation>
+    </message>
+    <message>
+        <location filename="../mainwindow.ui" line="1148"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/newPrefix/icons/dialog-cancel-2.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation></translation>
     </message>
 </context>
 <context>
     <name>StatusMessage</name>
     <message>
-        <location filename="../app.py" line="204"/>
+        <location filename="../app.py" line="206"/>
         <source>Settings saved!</source>
         <translation>Impostazioni salvate!</translation>
     </message>
     <message>
-        <location filename="../app.py" line="246"/>
+        <location filename="../app.py" line="250"/>
         <source>Requesting secret code...</source>
         <translation>Richiesta codice segreto...</translation>
     </message>
     <message>
-        <location filename="../app.py" line="228"/>
+        <location filename="../app.py" line="232"/>
         <source>Secret code received!</source>
         <translation>Codice segreto ricevuto!</translation>
     </message>
     <message>
-        <location filename="../app.py" line="389"/>
+        <location filename="../app.py" line="392"/>
         <source>Transfer complete!</source>
         <translation>Trasferimento completato!</translation>
     </message>
     <message>
-        <location filename="../app.py" line="354"/>
+        <location filename="../app.py" line="357"/>
         <source>Sending file...</source>
         <translation>Invio file...</translation>
     </message>
     <message>
-        <location filename="../app.py" line="379"/>
+        <location filename="../app.py" line="382"/>
         <source>Received text message</source>
         <translation>Ricevuto messaggio di testo</translation>
     </message>
     <message>
-        <location filename="../app.py" line="406"/>
+        <location filename="../app.py" line="409"/>
         <source>Awaiting for peer...</source>
         <translation>Attesa del peer...</translation>
     </message>

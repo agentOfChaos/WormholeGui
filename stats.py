@@ -15,6 +15,8 @@ class Stats:
         self._code_locked = False
         self._download_running = False
         self._upload_running = False
+        self._last_transfer_ok = False
+        self._last_transfer_fail = False
 
     @property
     def msgs_sent(self):
@@ -60,6 +62,14 @@ class Stats:
     def upload_running(self):
         return self._upload_running
 
+    @property
+    def last_transfer_ok(self):
+        return self._last_transfer_ok
+
+    @property
+    def last_transfer_fail(self):
+        return self._last_transfer_fail
+
     @msgs_sent.setter
     def msgs_sent(self, value):
         self._msgs_sent = value
@@ -94,6 +104,8 @@ class Stats:
             self._download_running = False
             self._upload_running = False
             self._waiting_peer = False
+            self._last_transfer_ok = False
+            self._last_transfer_fail = False
         if self.callback_updated is not None: self.callback_updated(self)
 
     @peer_connected.setter
@@ -103,6 +115,8 @@ class Stats:
 
         if self._peer_connected:
             self._waiting_peer = False
+            self._last_transfer_ok = False
+            self._last_transfer_fail = False
 
         self._peer_connected = value
         if self.callback_updated is not None: self.callback_updated(self)
@@ -126,6 +140,21 @@ class Stats:
     def upload_running(self, value):
         self._upload_running = value
         if self.callback_updated is not None: self.callback_updated(self)
+
+    @last_transfer_ok.setter
+    def last_transfer_ok(self, value):
+        self._last_transfer_ok = value
+        if value:
+            self._last_transfer_fail = False
+        if self.callback_updated is not None: self.callback_updated(self)
+
+    @last_transfer_fail.setter
+    def last_transfer_fail(self, value):
+        self._last_transfer_fail = value
+        if value:
+            self._last_transfer_ok = False
+        if self.callback_updated is not None: self.callback_updated(self)
+
 
 
 

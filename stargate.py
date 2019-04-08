@@ -36,7 +36,7 @@ def estimate_free_space(target):
 
 class StarGate:
 
-    def __init__(self, config, stats, logger, code_callback=None, progress_callback=None, message_callback=None, offered_callback=None):
+    def __init__(self, config, stats, logger, code_callback=None, progress_callback=None, message_callback=None, offered_callback=None, got_peer_callback=None):
         self.config = config
         self.stats = stats
         self.logger = logger
@@ -45,6 +45,7 @@ class StarGate:
         self.progress_callback = progress_callback
         self.message_callback = message_callback
         self.offered_callback = offered_callback
+        self.got_peer_callback = got_peer_callback
         self.code = ""
         self.reactor = reactor
         self.transit_sender = None
@@ -58,7 +59,6 @@ class StarGate:
         self.wants_offet = False
         self.got_unverified_key = False
         self.got_verifier = False
-        self.got_peer_callback = None
         self.connected = False
         self.receive_mode = False
 
@@ -178,6 +178,7 @@ class StarGate:
                 self.warning.info("Transfer interrupted.")
                 self.stats.upload_running = False
                 self.stats.peer_connected = False
+                self.stats.last_transfer_fail = True
                 self.reset_transfer()
                 return
 
@@ -192,14 +193,17 @@ class StarGate:
             if ok != "ok":
                 self.stats.send_errors += 1
                 self.logger.error("Confirmation not understood. Transfer unsuccessful.")
+                self.stats.last_transfer_fail = True
                 self.reset_transfer()
                 return
             if "sha256" in ack:
                 if ack["sha256"] != expected_hex:
                     self.stats.send_errors += 1
                     self.logger.error("Wrong checksum. The file was damaged during transport.")
+                    self.stats.last_transfer_fail = True
                     self.reset_transfer()
                     return
+            self.stats.last_transfer_ok = True
             self.logger.info("Confirmation received. Transfer complete.")
             self.stats.upload_running = False
             self.stats.peer_connected = False
@@ -352,9 +356,11 @@ class StarGate:
                     yield record_pipe.send_record(json.dumps(ack).encode("utf-8"))
                 except ConnectionClosed:
                     self.logger.warning("Connection lost, transfer interrupted.")
+                    self.stats.last_transfer_fail = False
                 yield record_pipe.close()
 
                 self.logger.info("Done receiving data!")
+                self.stats.last_transfer_ok = True
             self.fp = None
             self.stats.download_running = False
             self.stats.peer_connected = False

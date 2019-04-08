@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>771</width>
-    <height>657</height>
+    <height>683</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -34,7 +34,17 @@
         <property name="currentIndex">
          <number>0</number>
         </property>
+        <property name="iconSize">
+         <size>
+          <width>32</width>
+          <height>32</height>
+         </size>
+        </property>
         <widget class="QWidget" name="tabTransmit">
+         <attribute name="icon">
+          <iconset resource="resources.qrc">
+           <normaloff>:/newPrefix/icons/mail-outbox.png</normaloff>:/newPrefix/icons/mail-outbox.png</iconset>
+         </attribute>
          <attribute name="title">
           <string>Invia</string>
          </attribute>
@@ -63,7 +73,7 @@
                 </sizepolicy>
                </property>
                <property name="frameShape">
-                <enum>QFrame::Box</enum>
+                <enum>QFrame::StyledPanel</enum>
                </property>
                <property name="frameShadow">
                 <enum>QFrame::Raised</enum>
@@ -188,7 +198,7 @@ Codice</string>
                      </sizepolicy>
                     </property>
                     <property name="frameShape">
-                     <enum>QFrame::Box</enum>
+                     <enum>QFrame::StyledPanel</enum>
                     </property>
                     <property name="frameShadow">
                      <enum>QFrame::Raised</enum>
@@ -288,19 +298,6 @@ Codice</string>
                        </property>
                       </widget>
                      </item>
-                     <item row="6" column="2" colspan="2">
-                      <spacer name="horizontalSpacer_2">
-                       <property name="orientation">
-                        <enum>Qt::Horizontal</enum>
-                       </property>
-                       <property name="sizeHint" stdset="0">
-                        <size>
-                         <width>40</width>
-                         <height>20</height>
-                        </size>
-                       </property>
-                      </spacer>
-                     </item>
                      <item row="11" column="1" colspan="3">
                       <spacer name="horizontalSpacer_3">
                        <property name="orientation">
@@ -365,6 +362,19 @@ Codice</string>
                        </layout>
                       </widget>
                      </item>
+                     <item row="6" column="1" colspan="3">
+                      <spacer name="horizontalSpacer_2">
+                       <property name="orientation">
+                        <enum>Qt::Horizontal</enum>
+                       </property>
+                       <property name="sizeHint" stdset="0">
+                        <size>
+                         <width>40</width>
+                         <height>20</height>
+                        </size>
+                       </property>
+                      </spacer>
+                     </item>
                     </layout>
                    </widget>
                   </item>
@@ -377,7 +387,7 @@ Codice</string>
                      </sizepolicy>
                     </property>
                     <property name="frameShape">
-                     <enum>QFrame::Box</enum>
+                     <enum>QFrame::StyledPanel</enum>
                     </property>
                     <property name="frameShadow">
                      <enum>QFrame::Raised</enum>
@@ -440,6 +450,10 @@ Codice</string>
          </layout>
         </widget>
         <widget class="QWidget" name="tabReceive">
+         <attribute name="icon">
+          <iconset resource="resources.qrc">
+           <normaloff>:/newPrefix/icons/mail-receive.png</normaloff>:/newPrefix/icons/mail-receive.png</iconset>
+         </attribute>
          <attribute name="title">
           <string>Ricevi</string>
          </attribute>
@@ -471,7 +485,7 @@ Codice</string>
                    </sizepolicy>
                   </property>
                   <property name="frameShape">
-                   <enum>QFrame::Box</enum>
+                   <enum>QFrame::StyledPanel</enum>
                   </property>
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
@@ -704,7 +718,7 @@ Codice</string>
                    </sizepolicy>
                   </property>
                   <property name="frameShape">
-                   <enum>QFrame::Box</enum>
+                   <enum>QFrame::StyledPanel</enum>
                   </property>
                   <property name="frameShadow">
                    <enum>QFrame::Raised</enum>
@@ -776,7 +790,7 @@ Codice</string>
                 </sizepolicy>
                </property>
                <property name="frameShape">
-                <enum>QFrame::Box</enum>
+                <enum>QFrame::StyledPanel</enum>
                </property>
                <property name="frameShadow">
                 <enum>QFrame::Raised</enum>
@@ -871,6 +885,10 @@ Trasferimento</string>
          </layout>
         </widget>
         <widget class="QWidget" name="tabSettings">
+         <attribute name="icon">
+          <iconset resource="resources.qrc">
+           <normaloff>:/newPrefix/icons/preferences-system-4.png</normaloff>:/newPrefix/icons/preferences-system-4.png</iconset>
+         </attribute>
          <attribute name="title">
           <string>Setup</string>
          </attribute>
@@ -1002,6 +1020,10 @@ Trasferimento</string>
          </layout>
         </widget>
         <widget class="QWidget" name="tab">
+         <attribute name="icon">
+          <iconset resource="resources.qrc">
+           <normaloff>:/newPrefix/icons/utilities-log_viewer.png</normaloff>:/newPrefix/icons/utilities-log_viewer.png</iconset>
+         </attribute>
          <attribute name="title">
           <string>Logging</string>
          </attribute>
@@ -1104,6 +1126,26 @@ Trasferimento</string>
            </property>
            <property name="text">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/newPrefix/icons/mail-send.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="lblHasSuccess">
+           <property name="toolTip">
+            <string>Transfer succesful</string>
+           </property>
+           <property name="text">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/newPrefix/icons/dialog-ok-apply-6.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="lblHasFailure">
+           <property name="toolTip">
+            <string>Transfer failure</string>
+           </property>
+           <property name="text">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/newPrefix/icons/dialog-cancel-2.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
           </widget>
          </item>
