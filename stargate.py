@@ -313,6 +313,7 @@ class StarGate:
             self.send_data({"answer": {"message_ack": "ok"}})
             self.stats.peer_connected = False
         if "file" in offer:
+            self.stats.peer_connected = True
             self.stats.download_running = True
             self.file_to_receive = os.path.join(self.config["app"]["download_folder"], offer["file"]["filename"])
             self.filesize_to_receive = int(offer["file"]["filesize"])
