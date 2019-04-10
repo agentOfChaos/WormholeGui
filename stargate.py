@@ -36,40 +36,17 @@ def estimate_free_space(target):
 
 class StarGate:
 
-    def __init__(self, config, stats, logger, code_callback=None, progress_callback=None, message_callback=None, offered_callback=None, got_peer_callback=None):
+    def __init__(self, config, logger):
         self.config = config
-        self.stats = stats
+        self.orchestrator = None
         self.logger = logger
         self.wormhole = None
-        self.code_callback = code_callback
-        self.progress_callback = progress_callback
-        self.message_callback = message_callback
-        self.offered_callback = offered_callback
-        self.got_peer_callback = got_peer_callback
         self.code = ""
         self.reactor = reactor
         self.transit_sender = None
         self.transit_receiver = None
         self.file_sender = None
         self.fp = None
-        self.file_to_send = ""
-        self.file_to_receive = ""
-        self.filesize_to_receive = 0
-        self.wants_answer = False
-        self.wants_offet = False
-        self.got_unverified_key = False
-        self.got_verifier = False
-        self.connected = False
-        self.receive_mode = False
-
-    @property
-    def connected(self):
-        return self.stats.wormhole_connected
-
-    @connected.setter
-    def connected(self, value):
-        self.stats.wormhole_connected = value
-
 
     def connect(self):
         self.logger.info("Connecting to relay: %s" % self.config["wormhole"]["relay"])
@@ -77,51 +54,18 @@ class StarGate:
                                         self.config["wormhole"]["relay"],
                                         self.reactor,
                                         delegate=self)
-        self.connected = True
 
     def disconnect(self):
         self.wormhole.close()
 
-    def reconnect_as_needed(self):
-        if self.connected:
-            if self.code != "":
-                self.disconnect()
-                self.connect()
-        else:
-            self.connect()
-
-    def allocate_code(self):
-        self.reconnect_as_needed()
-        self.wormhole.allocate_code(3)
-
     def set_code(self, code):
-        self.reconnect_as_needed()
         self.wormhole.set_code(code)
 
     def send_message(self, data: str):
-        def closure():
-            self.inner_send_message(data)
-        self.logger.info("Waiting for peer...")
-        self.stats.waiting_peer = True
-        self.got_peer_callback = closure
-        self.check_peer_available()
-
-    def inner_send_message(self, data: str):
         self.send_data({"offer": {"message": data}})
-        self.wants_answer = True
-        self.stats.msgs_sent += 1
-
-    def send_file(self, filepath: str):
-        def closure():
-            self.inner_send_file(filepath)
-        self.logger.info("Waiting for peer...")
-        self.stats.waiting_peer = True
-        self.got_peer_callback = closure
-        self.check_peer_available()
 
     @inlineCallbacks
-    def inner_send_file(self, filepath: str):
-        self.stats.upload_running = True
+    def send_file(self, filepath: str):
         self.transit_sender = TransitSender(self.config["wormhole"]["transit"], no_listen=True, reactor=self.reactor)
         sender_abilities = self.transit_sender.get_connection_abilities()
         sender_hints = yield self.transit_sender.get_connection_hints()
@@ -140,16 +84,14 @@ class StarGate:
         filesize = os.stat(filepath).st_size
         message_offer = {"offer": {"file": {"filename": filename, "filesize": filesize}}}
         self.send_data(message_offer)
-        self.wants_answer = True
         self.file_to_send = filepath
 
         self.logger.info("Transmission sequence has begun, file: %s" % self.file_to_send)
-        self.stats.files_sent += 1
 
     @inlineCallbacks
-    def finish_sending_file(self):
+    def finish_sending_file(self, filepath: str, progress_callback):
         self.logger.info("Trasmission sequence entering phase 2")
-        with open(self.file_to_send, "rb") as fp:
+        with open(filepath, "rb") as fp:
             fp.seek(0, 2)
             filesize = fp.tell()
             fp.seek(0, 0)
@@ -167,7 +109,7 @@ class StarGate:
             def _count_and_hash(data, total_transferred):
                 hasher.update(data)
                 total_transferred[0] = total_transferred[0] + len(data)
-                if self.progress_callback is not None: self.progress_callback(total_transferred[0], filesize, self.file_to_send)
+                if progress_callback is not None: progress_callback(total_transferred[0], filesize, self.file_to_send)
                 return data
 
             self.logger.info("Transmitting file...")
@@ -175,11 +117,8 @@ class StarGate:
             try:
                 yield self.file_sender.beginFileTransfer(fp, record_pipe, transform=count_and_hash)
             except Exception:
-                self.warning.info("Transfer interrupted.")
-                self.stats.upload_running = False
-                self.stats.peer_connected = False
-                self.stats.last_transfer_fail = True
-                self.reset_transfer()
+                self.logger.warning.info("Transfer interrupted.")
+                self.orchestrator.fail_upload()
                 return
 
             expected_hash = hasher.digest()
@@ -191,33 +130,22 @@ class StarGate:
             ack = json.loads(ack_bytes.decode("utf-8"))
             ok = ack.get("ack", u"")
             if ok != "ok":
-                self.stats.send_errors += 1
                 self.logger.error("Confirmation not understood. Transfer unsuccessful.")
-                self.stats.last_transfer_fail = True
-                self.reset_transfer()
+                self.orchestrator.fail_upload()
                 return
             if "sha256" in ack:
                 if ack["sha256"] != expected_hex:
-                    self.stats.send_errors += 1
                     self.logger.error("Wrong checksum. The file was damaged during transport.")
-                    self.stats.last_transfer_fail = True
-                    self.reset_transfer()
+                    self.orchestrator.fail_upload()
                     return
-            self.stats.last_transfer_ok = True
             self.logger.info("Confirmation received. Transfer complete.")
-            self.stats.upload_running = False
-            self.stats.peer_connected = False
-            self.reset_transfer()
+            self.orchestrator.complete_upload()
 
-    def reset_transfer(self):
-        self.file_to_send = ""
-        self.file_to_receive = ""
-        self.filesize_to_receive = 0
-        self.wants_answer = False
-        self.got_unverified_key = False
-        self.got_verifier = False
-        self.wants_offer = False
-        self.receive_mode = False
+    def ack_message(self):
+        self.send_data({"answer": {"message_ack": "ok"}})
+
+    def ack_file(self):
+        self.send_data({"answer": {"file_ack": "ok"}})
 
     def send_data(self, data: dict):
         message = json.dumps(data)
@@ -225,9 +153,8 @@ class StarGate:
         self.wormhole.send_message(message.encode("utf-8"))
 
     def wormhole_got_code(self, code):
+        self.orchestrator.got_code(code)
         self.code = code
-        self.stats.code_locked = True
-        if self.code_callback is not None: self.code_callback(code)
 
     def wormhole_got_message(self, msg):  # called for each message
         self.logger.info("Wormhole got message: " + str(msg.decode("utf-8")))
@@ -235,138 +162,86 @@ class StarGate:
 
     def wormhole_got_welcome(self, welcome):
         self.logger.info("Wormhole got welcome: " + str(welcome))
+        self.orchestrator.got_welcome(welcome)
 
     def wormhole_got_unverified_key(self, key):
-        self.got_unverified_key = True
-        self.logger.info("Wormhole got unverified key: " + str(key))
+        self.orchestrator.got_unverified_key(key)
 
     def wormhole_got_versions(self, versions):
         self.logger.info("Wormhole got version: " + str(versions))
 
     def wormhole_got_verifier(self, verifier):
-        self.got_verifier = True
         self.logger.info("Wormhole got verifier: " + str(verifier))
-        if self.receive_mode:
-            pass  # todo optional verify
-        self.check_peer_available()
+        self.orchestrator.got_verifier(verifier)
 
     def wormhole_closed(self, result):
-        self.connected = False
         self.logger.info("Wormhole got closed: " + str(result))
-
-    def check_peer_available(self):
-        if self.got_verifier and self.got_unverified_key:
-            if self.got_peer_callback is not None:
-                self.logger.info("Peer connected!")
-                self.stats.peer_connected = True
-                self.got_peer_callback()
-                self.got_peer_callback = None
-                self.got_unverified_key = False
-                self.got_verifier = False
+        self.orchestrator.disconnected()
 
     def parse_message(self, msg):
         try:
             msg_obj = json.loads(msg.decode("utf-8"))
-            if "answer" in msg_obj and not self.receive_mode:
-                self.handle_answer(msg_obj["answer"])
-            if "offer" in msg_obj and self.receive_mode:
+            if "answer" in msg_obj:
+                self.orchestrator.got_answer(msg_obj["answer"])
+            if "offer" in msg_obj:
                 self.handle_offer(msg_obj["offer"])
             if "transit" in msg_obj:
-                if self.receive_mode:
-                    self.handle_transit_recv(msg_obj["transit"])
-                else:
-                    self.transit_sender.add_connection_hints(msg_obj["transit"].get("hints-v1", []))
+                self.orchestrator.got_transit(msg_obj["transit"])
             if "error" in msg_obj:
-                self.stats.recv_errors += 1
-                self.reset_transfer()
+                self.orchestrator.error(msg_obj["error"])
 
         except Exception:
-            self.stats.recv_errors += 1
-            self.reset_transfer()
+            self.orchestrator.error({})
 
-
-    def handle_answer(self, answer):
-        if not self.wants_answer:
-            return  # duplicate answer
-
-        if "message_ack" in answer:
-            if answer["message_ack"] == "ok":
-                self.stats.msgs_acks += 1
-                self.stats.peer_connected = False
-        if "file_ack" in answer:
-            if answer["file_ack"] == "ok":
-                self.stats.file_acks += 1
-
-        if self.file_to_send != "":
-            self.finish_sending_file()
-
-        self.wants_answer = False
+    def handle_offer(self, offer):
+        if "message" in offer:
+            self.orchestrator.got_message_offer(offer)
+        if "file" in offer:
+            self.orchestrator.got_file_offer(offer)
 
     @inlineCallbacks
-    def handle_offer(self, offer):
-        if not self.wants_offer:
-            return  # duplicate offer
+    def download_file(self, filename, filesize, progress_callback=None):
+        self.logger.info("Offered file: %s, %d bytes." % (filename, filesize))
 
-        if "message" in offer:
-            if self.message_callback is not None:
-                self.message_callback(offer["message"])
-            self.send_data({"answer": {"message_ack": "ok"}})
-            self.stats.peer_connected = False
-        if "file" in offer:
-            self.stats.peer_connected = True
-            self.stats.download_running = True
-            self.file_to_receive = os.path.join(self.config["app"]["download_folder"], offer["file"]["filename"])
-            self.filesize_to_receive = int(offer["file"]["filesize"])
+        free = estimate_free_space(filename)
 
-            self.logger.info("Offered file: %s, %d bytes." % (self.file_to_receive, self.filesize_to_receive))
+        if free is not None and free < filesize:
+            self.logger.error("Error: insufficient free space (%sB) for file (%sB)" % (free, filesize))
+            self.orchestrator.fail_download()
+            return
 
-            if self.offered_callback is not None:
-                if not self.offered_callback(self.file_to_receive, self.filesize_to_receive):
-                    return
+        self.ack_file()
 
-            free = estimate_free_space(self.file_to_receive)
+        self.logger.debug("Connecting to transit relay %s ..." % self.config["wormhole"]["transit"])
+        record_pipe = yield self.transit_receiver.connect()
+        self.logger.info("Receiving (%s).." % record_pipe.describe())
 
-            if free is not None and free < self.filesize_to_receive:
-                self.logger.error("Error: insufficient free space (%sB) for file (%sB)" % (free, self.filesize_to_receive))
-                self.reset_transfer()
-                return
+        total_transferred = [0]
+        count_and_hash = lambda partial_transferred: _count_and_hash(partial_transferred, total_transferred)
 
-            self.send_data({"answer": {"file_ack": "ok"}})
+        def _count_and_hash(partial_transferred, total_transferred):
+            total_transferred[0] = total_transferred[0] + partial_transferred
+            if progress_callback is not None: progress_callback(total_transferred[0], filesize, filename)
+            return partial_transferred
 
-            self.logger.debug("Connecting to transit relay %s ..." % self.config["wormhole"]["transit"])
-            record_pipe = yield self.transit_receiver.connect()
-            self.logger.info("Receiving (%s).." % record_pipe.describe())
+        self.logger.info("Receiving data...")
+        hasher = hashlib.sha256()
+        with open(filename, "wb") as self.fp:
+            try:
+                received = yield record_pipe.writeToFile(self.fp, filesize, count_and_hash, hasher.update)
+                datahash = hasher.digest()
+                datahash_hex = bytes_to_hexstr(datahash)
+                ack = {"ack": "ok", "sha256": datahash_hex}
+                yield record_pipe.send_record(json.dumps(ack).encode("utf-8"))
+            except ConnectionClosed:
+                self.logger.warning("Connection lost, transfer interrupted.")
+                self.orchestrator.fail_download()
+            yield record_pipe.close()
 
-            total_transferred = [0]
-            count_and_hash = lambda partial_transferred: _count_and_hash(partial_transferred, total_transferred)
+            self.logger.info("Done receiving data!")
+            self.orchestrator.complete_download()
+        self.fp = None
 
-            def _count_and_hash(partial_transferred, total_transferred):
-                total_transferred[0] = total_transferred[0] + partial_transferred
-                if self.progress_callback is not None: self.progress_callback(total_transferred[0], self.filesize_to_receive,
-                                                                              self.file_to_receive)
-                return partial_transferred
-
-            self.logger.info("Receiving data...")
-            hasher = hashlib.sha256()
-            with open(self.file_to_receive, "wb") as self.fp:
-                try:
-                    received = yield record_pipe.writeToFile(self.fp, self.filesize_to_receive, count_and_hash, hasher.update)
-                    datahash = hasher.digest()
-                    datahash_hex = bytes_to_hexstr(datahash)
-                    ack = {"ack": "ok", "sha256": datahash_hex}
-                    yield record_pipe.send_record(json.dumps(ack).encode("utf-8"))
-                except ConnectionClosed:
-                    self.logger.warning("Connection lost, transfer interrupted.")
-                    self.stats.last_transfer_fail = False
-                yield record_pipe.close()
-
-                self.logger.info("Done receiving data!")
-                self.stats.last_transfer_ok = True
-            self.fp = None
-            self.stats.download_running = False
-            self.stats.peer_connected = False
-
-        self.wants_offer = False
 
     @inlineCallbacks
     def handle_transit_recv(self, sender_transit):
@@ -385,12 +260,10 @@ class StarGate:
 
         self.send_data({"transit": receiver_transit})
 
-    def receive_any(self):
-        self.wants_offer = True
-        self.receive_mode = True
+    def handle_transit_send(self, transit):
+        self.transit_sender.add_connection_hints(transit.get("hints-v1", []))
 
     def stop_all(self):
-        self.reset_transfer()
         if self.fp is not None:
             self.fp.close()
         try:

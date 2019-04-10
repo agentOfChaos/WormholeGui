@@ -18,6 +18,7 @@ from stats import Stats
 from utils import has_error_message, init_label_opacity
 from wormhole.errors import KeyFormatError
 from wormhole._wordlist import raw_words as pgp_words
+from orchestrator import WormholeOrchestrator
 
 
 class CustomLogHandler(StreamHandler):
@@ -61,7 +62,9 @@ class WormholeGui(QObject):
         self.config = configparser.ConfigParser()
 
         self.stats = Stats(callback_updated=self.show_stats)
-        self.stargate = StarGate(self.config, self.stats, self.logger, self.got_secret_code)
+        self.stargate = StarGate(self.config, self.logger)
+        self.orchestrator = WormholeOrchestrator(self, self.stargate, self.stats)
+        self.stargate.orchestrator = self.orchestrator
         self.load_config()
 
         self.setup_translator()
@@ -252,7 +255,7 @@ class WormholeGui(QObject):
             text = self.mainwindow.txtSecretCode.text()
             if recv_mode: text = self.mainwindow.txtSecretCodeRecv.text()
 
-            self.stargate.set_code(text)
+            self.orchestrator.set_code(text)
             return True
         except KeyFormatError as e:
             QMessageBox.warning(self.mainwindow, "Wormhole GUI",
@@ -295,7 +298,7 @@ class WormholeGui(QObject):
                                 self.translator.translate("ErrorDialog", "Il campo messaggio è vuoto!"),
                                 QMessageBox.Ok)
             return
-        self.stargate.send_message(self.mainwindow.txtMessage.toPlainText())
+        self.orchestrator.send_message(self.mainwindow.txtMessage.toPlainText())
         self.mainwindow.statusbar.showMessage("Sending text...", 5000)
 
     @has_error_message
@@ -319,6 +322,23 @@ class WormholeGui(QObject):
         self.save_settings()
 
     @has_error_message
+    def send_progress_callback(self, partial, total, filename):
+        if self.progress_counter is None:
+            self.progress_counter = CustomProgressIndicator(total)
+        self.progress_counter.numerator = partial
+        if total != 0:
+            percent = (partial * 100) / total
+            self.mainwindow.progressSendFile.setValue(percent)
+            if percent == 100:
+                self.mainwindow.statusbar.showMessage(self.translator.translate("StatusMessage", "Transfer complete!"),
+                                                      5000)
+        self.mainwindow.lblSendRate.setText(
+            self.translator.translate("MainWindow", "Velocità: ") + str(self.progress_counter.str_rate))
+        self.mainwindow.lblSendTotal.setText(
+            self.translator.translate("MainWindow", "Inviati: ") + str(self.progress_counter.str_numerator))
+        self.mainwindow.lblSendETA.setText(self.progress_counter.str_eta)
+
+    @has_error_message
     def send_file(self):
         filename = self.mainwindow.txtFileName.text()
 
@@ -338,77 +358,67 @@ class WormholeGui(QObject):
                                 QMessageBox.Ok)
             return
 
-        def progress_callback(partial, total, filename):
-            if self.progress_counter is None:
-                self.progress_counter = CustomProgressIndicator(total)
-            self.progress_counter.numerator = partial
-            if total != 0:
-                percent = (partial * 100) / total
-                self.mainwindow.progressSendFile.setValue(percent)
-                if percent == 100:
-                    self.mainwindow.statusbar.showMessage(self.translator.translate("StatusMessage", "Transfer complete!"), 5000)
-            self.mainwindow.lblSendRate.setText(self.translator.translate("MainWindow", "Velocità: ") + str(self.progress_counter.str_rate))
-            self.mainwindow.lblSendTotal.setText(self.translator.translate("MainWindow", "Inviati: ") + str(self.progress_counter.str_numerator))
-            self.mainwindow.lblSendETA.setText(self.progress_counter.str_eta)
-
-
-        self.stargate.progress_callback = progress_callback
-
         self.mainwindow.statusbar.showMessage(self.translator.translate("StatusMessage", "Sending file..."))
-        self.stargate.send_file(self.mainwindow.txtFileName.text())
+        self.orchestrator.send_file(self.mainwindow.txtFileName.text())
 
     def update_wormhole_action_text(self):
-        if self.stargate.connected:
+        if self.stats.wormhole_connected:
             self.mainwindow.actionWormhole.setText(self.translator.translate("MainWindow", "Disconnetti Wormhole"))
         else:
             self.mainwindow.actionWormhole.setText(self.translator.translate("MainWindow", "Connetti Wormhole"))
 
     @has_error_message
     def toggle_connect_wormhole(self):
-        if self.stargate.connected:
-            self.stargate.disconnect()
+        if self.stats.wormhole_connected:
+            self.orchestrator.disconnect()
         else:
-            self.stargate.connect()
+            self.orchestrator.connect()
         self.update_wormhole_action_text()
 
     @has_error_message
+    def recv_message_callback(self, msg):
+        if not self.mainwindow.chkAppend.isChecked():
+            self.mainwindow.txtMessageRecv.clear()
+        self.mainwindow.txtMessageRecv.moveCursor(QTextCursor.End)
+        self.mainwindow.txtMessageRecv.insertPlainText(msg + "\n")
+        self.mainwindow.txtMessageRecv.moveCursor(QTextCursor.End)
+        self.mainwindow.statusbar.showMessage(self.translator.translate("StatusMessage", "Received text message"), 5000)
+
+    @has_error_message
+    def recv_progress_callback(self, partial, total, filename):
+        if self.progress_counter is None:
+            self.progress_counter = CustomProgressIndicator(total)
+        self.progress_counter.numerator = partial
+        if total != 0:
+            percent = (partial * 100) / total
+            self.mainwindow.progressRecvFile.setValue(percent)
+            if percent == 100:
+                self.mainwindow.statusbar.showMessage(self.translator.translate("StatusMessage", "Transfer complete!"),
+                                                      5000)
+        self.mainwindow.lblRecvRate.setText(
+            self.translator.translate("MainWindow", "Velocità: ") + str(self.progress_counter.str_rate))
+        self.mainwindow.lblRecvTotal.setText(
+            self.translator.translate("MainWindow", "Ricevuti: ") + str(self.progress_counter.str_numerator))
+        self.mainwindow.lblRecvETA.setText(self.progress_counter.str_eta)
+
+    @has_error_message
+    def recv_offered_callback(self, filename, filesize):
+        self.mainwindow.lblRecvFileName.setText(os.path.basename(filename))
+        self.mainwindow.lcdNumber.display(filesize)
+        return True
+
+    @has_error_message
     def recv_anything(self):
-        def message_callback(msg):
-            if not self.mainwindow.chkAppend.isChecked():
-                self.mainwindow.txtMessageRecv.clear()
-            self.mainwindow.txtMessageRecv.moveCursor(QTextCursor.End)
-            self.mainwindow.txtMessageRecv.insertPlainText(msg + "\n")
-            self.mainwindow.txtMessageRecv.moveCursor(QTextCursor.End)
-            self.mainwindow.statusbar.showMessage(self.translator.translate("StatusMessage", "Received text message"), 5000)
-
-        def progress_callback(partial, total, filename):
-            if self.progress_counter is None:
-                self.progress_counter = CustomProgressIndicator(total)
-            self.progress_counter.numerator = partial
-            if total != 0:
-                percent = (partial * 100) / total
-                self.mainwindow.progressRecvFile.setValue(percent)
-                if percent == 100:
-                    self.mainwindow.statusbar.showMessage(self.translator.translate("StatusMessage", "Transfer complete!"), 5000)
-            self.mainwindow.lblRecvRate.setText(self.translator.translate("MainWindow", "Velocità: ") + str(self.progress_counter.str_rate))
-            self.mainwindow.lblRecvTotal.setText(self.translator.translate("MainWindow", "Ricevuti: ") + str(self.progress_counter.str_numerator))
-            self.mainwindow.lblRecvETA.setText(self.progress_counter.str_eta)
-
-        def offered_callback(filename, filesize):
-            self.mainwindow.lblRecvFileName.setText(os.path.basename(filename))
-            self.mainwindow.lcdNumber.display(filesize)
-            return True
-
-        self.stargate.message_callback = message_callback
-        self.stargate.progress_callback = progress_callback
-        self.stargate.offered_callback = offered_callback
-
-        self.stargate.receive_any()
         if not self.set_code(True): return
-
         self.mainwindow.statusbar.showMessage(self.translator.translate("StatusMessage", "Awaiting for peer..."))
+        self.orchestrator.receive()
 
     @has_error_message
     def super_stop(self):
         self.stargate.stop_all()
+
+    def custom_error(self, text):
+        QMessageBox.critical(self.mainwindow, "Wormhole GUI",
+                            text,
+                            QMessageBox.Ok)
 
