@@ -13,4 +13,4 @@ python main.py
 
 ## Screenshots
 
-![Main window]("screenshot.png")
+![Main window](screenshot.png)
