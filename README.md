@@ -10,3 +10,7 @@ pip install -r requirements.txt
 ```
 python main.py
 ```
+
+## Screenshots
+
+![Main window]("screenshot.png")

@@ -1,6 +1,13 @@
 <RCC>
   <qresource prefix="newPrefix">
+    <file>icons/edit-paste-2.png</file>
+    <file>icons/wormhole.png</file>
+    <file>icons/lock-6.png</file>
+    <file>icons/edit-copy-6.png</file>
+    <file>icons/roll-2.png</file>
+    <file>icons/lock-silver.png</file>
     <file>icons/dialog-ok-apply-6.png</file>
+    <file>icons/mail-send.png</file>
     <file>icons/dialog-cancel-2.png</file>
     <file>icons/utilities-log_viewer.png</file>
     <file>icons/preferences-system-4.png</file>

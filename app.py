@@ -7,7 +7,7 @@ import logging
 import secrets
 from logging import StreamHandler
 from PySide2.QtCore import QEvent, QObject, QTranslator, QLocale, QStringListModel
-from PySide2.QtWidgets import QMessageBox, QFileDialog, QMainWindow, QApplication, QCompleter
+from PySide2.QtWidgets import QMessageBox, QFileDialog, QMainWindow, QApplication, QCompleter, QDialog
 from PySide2.QtGui import QTextCursor, QGuiApplication
 from langcodes import Language
 
@@ -19,6 +19,16 @@ from utils import has_error_message, init_label_opacity
 from wormhole.errors import KeyFormatError
 from wormhole._wordlist import raw_words as pgp_words
 from orchestrator import WormholeOrchestrator
+
+
+from about import Ui_Dialog as Ui_AboutDialog
+
+class AboutDialog(QDialog, Ui_AboutDialog):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setupUi(self)
+        self.btnOK.clicked.connect(self.close)
 
 
 class CustomLogHandler(StreamHandler):
@@ -147,6 +157,8 @@ class WormholeGui(QObject):
         self.mainwindow.actionWormhole.triggered.connect(self.toggle_connect_wormhole)
         self.mainwindow.actionOpenFile.triggered.connect(self.browse_file)
         self.mainwindow.actionQuit.triggered.connect(self.on_exit)
+        self.mainwindow.actionViewGraph.triggered.connect(self.debug_graph)
+        self.mainwindow.actionAbout.triggered.connect(self.dialog_about)
 
         self.mainwindow.cmbLanguage.addItems(list(map(lambda langcode: Language.get(langcode).autonym(),
                                                       self.available_languages[1:])))
@@ -207,6 +219,7 @@ class WormholeGui(QObject):
         with open(self.config_filename, "w") as fp:
             self.config.write(fp)
         self.mainwindow.statusbar.showMessage(self.translator.translate("StatusMessage", "Settings saved!"), 5000)
+        self.mainwindow.retranslateUi(self.mainwindow)
 
     def show_stats(self, stats: Stats):
         try:
@@ -234,7 +247,6 @@ class WormholeGui(QObject):
         self.logger.debug("Obtained secret code: " + code)
         self.mainwindow.statusbar.showMessage(self.translator.translate("StatusMessage", "Secret code received!"), 5000)
         self.mainwindow.txtSecretCode.setText(code)
-        self.update_wormhole_action_text()
 
     @has_error_message
     def copy_secret_code(self):
@@ -252,10 +264,12 @@ class WormholeGui(QObject):
         self.logger.debug("Requesting secret code...")
         self.mainwindow.statusbar.showMessage(self.translator.translate("StatusMessage", "Requesting secret code..."), 5000)
         try:
-            text = self.mainwindow.txtSecretCode.text()
-            if recv_mode: text = self.mainwindow.txtSecretCodeRecv.text()
-
-            self.orchestrator.set_code(text)
+            if recv_mode:
+                text = self.mainwindow.txtSecretCodeRecv.text()
+                self.orchestrator.receive(text)
+            else:
+                text = self.mainwindow.txtSecretCode.text()
+                self.orchestrator.set_code(text)
             return True
         except KeyFormatError as e:
             QMessageBox.warning(self.mainwindow, "Wormhole GUI",
@@ -370,10 +384,9 @@ class WormholeGui(QObject):
     @has_error_message
     def toggle_connect_wormhole(self):
         if self.stats.wormhole_connected:
-            self.orchestrator.disconnect()
+            self.stargate.disconnect()
         else:
             self.orchestrator.connect()
-        self.update_wormhole_action_text()
 
     @has_error_message
     def recv_message_callback(self, msg):
@@ -411,14 +424,27 @@ class WormholeGui(QObject):
     def recv_anything(self):
         if not self.set_code(True): return
         self.mainwindow.statusbar.showMessage(self.translator.translate("StatusMessage", "Awaiting for peer..."))
-        self.orchestrator.receive()
 
     @has_error_message
     def super_stop(self):
         self.stargate.stop_all()
 
-    def custom_error(self, text):
-        QMessageBox.critical(self.mainwindow, "Wormhole GUI",
+    def orchestrator_error(self, text):
+        self.logger.critical(text)
+        return QMessageBox.critical(self.mainwindow, "Wormhole GUI Orchestrator Error",
+                            text,
+                            QMessageBox.Ok | QMessageBox.Help | QMessageBox.Retry)
+
+    def wormhole_error(self, text):
+        self.logger.critical(text)
+        return QMessageBox.critical(self.mainwindow, "Wormhole Error",
                             text,
                             QMessageBox.Ok)
 
+    def dialog_about(self):
+        d = AboutDialog()
+        d.retranslateUi(d)
+        d.exec_()
+
+    def debug_graph(self):
+        self.orchestrator.visual_debug(True)

@@ -9,8 +9,10 @@ from time import sleep
 from twisted.internet.error import ConnectionClosed
 from twisted.internet.defer import inlineCallbacks
 from wormhole.transit import TransitSender, TransitReceiver
+from wormhole.errors import KeyFormatError
 from twisted.protocols import basic
 
+from utils import has_orchestrator_error_message
 
 
 def bytes_to_hexstr(b):
@@ -59,7 +61,11 @@ class StarGate:
         self.wormhole.close()
 
     def set_code(self, code):
-        self.wormhole.set_code(code)
+        try:
+            self.wormhole.set_code(code)
+        except KeyFormatError as e:
+            self.orchestrator.got_bad_code(str(e))
+
 
     def send_message(self, data: str):
         self.send_data({"offer": {"message": data}})
@@ -152,6 +158,7 @@ class StarGate:
         self.logger.debug("Wormhole send: " + message)
         self.wormhole.send_message(message.encode("utf-8"))
 
+    @has_orchestrator_error_message
     def wormhole_got_code(self, code):
         self.orchestrator.got_code(code)
         self.code = code
@@ -160,24 +167,29 @@ class StarGate:
         self.logger.info("Wormhole got message: " + str(msg.decode("utf-8")))
         self.parse_message(msg)
 
+    @has_orchestrator_error_message
     def wormhole_got_welcome(self, welcome):
         self.logger.info("Wormhole got welcome: " + str(welcome))
         self.orchestrator.got_welcome(welcome)
 
+    @has_orchestrator_error_message
     def wormhole_got_unverified_key(self, key):
         self.orchestrator.got_unverified_key(key)
 
     def wormhole_got_versions(self, versions):
         self.logger.info("Wormhole got version: " + str(versions))
 
+    @has_orchestrator_error_message
     def wormhole_got_verifier(self, verifier):
         self.logger.info("Wormhole got verifier: " + str(verifier))
         self.orchestrator.got_verifier(verifier)
 
+    @has_orchestrator_error_message
     def wormhole_closed(self, result):
         self.logger.info("Wormhole got closed: " + str(result))
-        self.orchestrator.disconnected()
+        self.orchestrator.got_disconnected()
 
+    @has_orchestrator_error_message
     def parse_message(self, msg):
         try:
             msg_obj = json.loads(msg.decode("utf-8"))
@@ -190,9 +202,10 @@ class StarGate:
             if "error" in msg_obj:
                 self.orchestrator.error(msg_obj["error"])
 
-        except Exception:
-            self.orchestrator.error({})
+        except Exception as e:
+            self.orchestrator.error(str(e))
 
+    @has_orchestrator_error_message
     def handle_offer(self, offer):
         if "message" in offer:
             self.orchestrator.got_message_offer(offer)

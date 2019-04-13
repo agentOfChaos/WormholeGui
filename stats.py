@@ -18,6 +18,16 @@ class Stats:
         self._last_transfer_ok = False
         self._last_transfer_fail = False
 
+    def reset(self):
+        self._wormhole_connected = False
+        self._peer_connected = False
+        self._waiting_peer = False
+        self._code_locked = False
+        self._download_running = False
+        self._upload_running = False
+        self._last_transfer_ok = False
+        self._last_transfer_fail = False
+
     @property
     def msgs_sent(self):
         return self._msgs_sent
@@ -98,26 +108,10 @@ class Stats:
     @wormhole_connected.setter
     def wormhole_connected(self, value):
         self._wormhole_connected = value
-        if not self._wormhole_connected:
-            self._peer_connected = False
-            self._code_locked = False
-            self._download_running = False
-            self._upload_running = False
-            self._waiting_peer = False
-            self._last_transfer_ok = False
-            self._last_transfer_fail = False
         if self.callback_updated is not None: self.callback_updated(self)
 
     @peer_connected.setter
     def peer_connected(self, value):
-        if value and not self._peer_connected:
-            self._code_locked = False
-
-        if self._peer_connected:
-            self._waiting_peer = False
-            self._last_transfer_ok = False
-            self._last_transfer_fail = False
-
         self._peer_connected = value
         if self.callback_updated is not None: self.callback_updated(self)
 
@@ -144,15 +138,11 @@ class Stats:
     @last_transfer_ok.setter
     def last_transfer_ok(self, value):
         self._last_transfer_ok = value
-        if value:
-            self._last_transfer_fail = False
         if self.callback_updated is not None: self.callback_updated(self)
 
     @last_transfer_fail.setter
     def last_transfer_fail(self, value):
         self._last_transfer_fail = value
-        if value:
-            self._last_transfer_ok = False
         if self.callback_updated is not None: self.callback_updated(self)
 
 
