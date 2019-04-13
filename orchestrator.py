@@ -1,4 +1,12 @@
-from transitions.extensions import GraphMachine as Machine
+try:
+    import pygraphviz
+    from transitions.extensions import GraphMachine as Machine
+    has_graph_capab = True
+except Exception:
+    from transitions import Machine
+    has_graph_capab = False
+
+
 from utils import open_file
 from PySide2.QtWidgets import QMessageBox
 
@@ -120,7 +128,8 @@ class WormholeOrchestrator:
         if desc is not None:
             msg += "\nDescription: " + str(desc)
         self.tmp_error["message"] = msg
-        self.tmp_error["graph"] = self.machine.get_combined_graph()
+        if has_graph_capab:
+            self.tmp_error["graph"] = self.machine.get_combined_graph()
 
     def _on_error_after(self, desc=None):
         status = self.app.orchestrator_error(self.tmp_error["message"])
@@ -293,6 +302,9 @@ class WormholeOrchestrator:
         self.stats.peer_connected = False
 
     def visual_debug(self, recreate=True):
+        if not has_graph_capab:
+            self.app.orchestrator_error("Graphing feature unavailable on Microsoft Windows")
+            return
         if recreate:
             self.tmp_error["graph"] = self.machine.get_combined_graph()
         graph = self.tmp_error["graph"]
