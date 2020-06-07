@@ -6,7 +6,7 @@ import sys
 import logging
 import secrets
 from logging import StreamHandler
-from PySide2.QtCore import QEvent, QObject, QTranslator, QLocale, QStringListModel
+from PySide2.QtCore import QEvent, QObject, QTranslator, QLocale, QStringListModel, QDirIterator, QFile, QIODevice, QTextStream
 from PySide2.QtWidgets import QMessageBox, QFileDialog, QMainWindow, QApplication, QCompleter, QDialog
 from PySide2.QtGui import QTextCursor, QGuiApplication
 from langcodes import Language
@@ -22,6 +22,16 @@ from orchestrator import WormholeOrchestrator
 
 
 from about import Ui_Dialog as Ui_AboutDialog
+import international_rc
+
+
+def list_qdir(path, level=0) -> []:
+    it = QDirIterator(path)
+    result = [path]
+    while it.hasNext():
+        result.extend(list_qdir(it.next(), level + 1))
+    return result
+
 
 class AboutDialog(QDialog, Ui_AboutDialog):
 
@@ -45,6 +55,14 @@ class CustomLogHandler(StreamHandler):
 
     def flush(self):
         pass
+
+
+def load_qt_res_text(path):
+    stream = QFile(path)
+    stream.open(QIODevice.ReadOnly)
+    text = QTextStream(stream).readAll()
+    stream.close()
+    return text
 
 
 class WormholeGui(QObject):
@@ -100,34 +118,55 @@ class WormholeGui(QObject):
         txt = CustomLogHandler(self.mainwindow.txtLog)
         txt.setFormatter(formatter)
         self.logger.addHandler(txt)
+        self.logger.debug("Loaded config file %s" % self.config_filename)
 
     def setup_translator(self):
         self.translator = QTranslator()
         language_code = self.config["app"]["language"]
         if language_code == "systemdefault":
             language_code = QLocale.system().name()
-        translation_filename = os.path.join(self.translation_folder, "%s.qm" % language_code)
+
+        translation_filename = ":/res/%s/%s.qm" % (self.translation_folder, language_code)
+        translation_filename_disk = os.path.join(self.wordlist_folder, "%s.txt" % language_code)
         if self.translator.load(translation_filename):
             self.logger.debug("Loaded %s translation." % language_code)
+        elif self.translator.load(translation_filename_disk):
+            self.logger.debug("Loaded %s translation (from disk)." % language_code)
         else:
             self.logger.warning("Translation file %s not found." % translation_filename)
         self.app.installTranslator(self.translator)
         self.mainwindow.retranslateUi(self.mainwindow)
-        self.available_languages = ["systemdefault"] + list(map(lambda fname: fname[:-3],
-                                                                filter(lambda fname: fname.endswith(".qm"),
-                                                                       os.listdir(self.translation_folder))))
+        self.list_available_languages()
         self.code_wordlist = []
         for bite, pair in pgp_words.items():
             self.code_wordlist.extend(pair)
 
-        wordlist_filename = os.path.join(self.wordlist_folder, "%s.txt" % language_code)
-        if os.path.isfile(wordlist_filename):
-            with open(wordlist_filename, "r") as fp:
+        wordlist_filename = ":/res/%s/%s.txt" % (self.wordlist_folder, language_code)
+        wordlist_filename_disk = os.path.join(self.wordlist_folder, "%s.txt" % language_code)
+        if QFile(wordlist_filename).exists:
+            content = load_qt_res_text(wordlist_filename)
+            self.code_wordlist = list(filter(lambda i: len(i.strip()) > 0,
+                                             content.split("\n")))
+            self.logger.debug("Loaded %s wordlist." % wordlist_filename)
+        elif os.path.isfile(wordlist_filename_disk):
+            with open(wordlist_filename_disk, "r") as fp:
                 self.code_wordlist = list(filter(lambda i: len(i.strip()) > 0,
                                                  fp.read().split("\n")))
-            self.logger.debug("Loaded %s wordlist." % wordlist_filename)
+            self.logger.debug("Loaded %s wordlist." % wordlist_filename_disk)
         else:
             self.logger.warning("Wordlist file %s not found." % wordlist_filename)
+
+    def list_available_languages(self):
+        self.available_languages = []
+        self.available_languages.append("systemdefault")
+        if os.path.isdir(self.translation_folder):
+            self.available_languages.extend(list(map(lambda fname: fname[:-3],
+                                                     filter(lambda fname: fname.endswith(".qm"),
+                                                            os.listdir(self.translation_folder)))))
+        self.available_languages.extend(list(map(lambda fpath: fpath.split("/")[-1][:-3],
+                                                 filter(lambda fpath: fpath.endswith(".qm"),
+                                                        list_qdir(":/")))))
+        self.available_languages = list(set(self.available_languages))
 
 
     def setup_controls(self):
@@ -223,6 +262,8 @@ class WormholeGui(QObject):
 
     def show_stats(self, stats: Stats):
         try:
+            if not stats.peer_connected:
+                self.mainwindow.txtPeerAddress.setText("")
             self.opacity_filters[self.mainwindow.lblHasWormhole].setOpacity(1.0 if stats.wormhole_connected else self.opacity_off)
             self.opacity_filters[self.mainwindow.lblHasCode].setOpacity(1.0 if stats.code_locked else self.opacity_off)
             self.opacity_filters[self.mainwindow.lblHasPeer].setOpacity(1.0 if stats.peer_connected else self.opacity_off)
@@ -324,7 +365,7 @@ class WormholeGui(QObject):
         filename, _ = QFileDialog.getOpenFileName(self.mainwindow,
                                                   self.translator.translate("FilePicker", "Seleziona un file"),
                                                   "",
-                                                  "All Files (*);")
+                                                  filter="All Files (*)")
         self.mainwindow.txtFileName.setText(filename)
 
     @has_error_message
@@ -336,7 +377,7 @@ class WormholeGui(QObject):
         self.save_settings()
 
     @has_error_message
-    def send_progress_callback(self, partial, total, filename):
+    def send_progress_callback(self, partial: int, total: int, filename: str, peer: str):
         if self.progress_counter is None:
             self.progress_counter = CustomProgressIndicator(total)
         self.progress_counter.numerator = partial
@@ -351,6 +392,8 @@ class WormholeGui(QObject):
         self.mainwindow.lblSendTotal.setText(
             self.translator.translate("MainWindow", "Inviati: ") + str(self.progress_counter.str_numerator))
         self.mainwindow.lblSendETA.setText(self.progress_counter.str_eta)
+        if self.mainwindow.txtPeerAddress.toPlainText() != peer:
+            self.mainwindow.txtPeerAddress.setText(peer)
 
     @has_error_message
     def send_file(self):
@@ -398,7 +441,7 @@ class WormholeGui(QObject):
         self.mainwindow.statusbar.showMessage(self.translator.translate("StatusMessage", "Received text message"), 5000)
 
     @has_error_message
-    def recv_progress_callback(self, partial, total, filename):
+    def recv_progress_callback(self, partial: int, total: int, filename: str, peer: str):
         if self.progress_counter is None:
             self.progress_counter = CustomProgressIndicator(total)
         self.progress_counter.numerator = partial
@@ -413,16 +456,19 @@ class WormholeGui(QObject):
         self.mainwindow.lblRecvTotal.setText(
             self.translator.translate("MainWindow", "Ricevuti: ") + str(self.progress_counter.str_numerator))
         self.mainwindow.lblRecvETA.setText(self.progress_counter.str_eta)
+        if self.mainwindow.txtPeerAddress.toPlainText() != peer:
+            self.mainwindow.txtPeerAddress.setText(peer)
 
     @has_error_message
-    def recv_offered_callback(self, filename, filesize):
+    def recv_offered_callback(self, filename: str, filesize: int):
         self.mainwindow.lblRecvFileName.setText(os.path.basename(filename))
-        self.mainwindow.lcdNumber.display(filesize)
+        self.mainwindow.lcdNumber.display(str(filesize))
         return True
 
     @has_error_message
     def recv_anything(self):
-        if not self.set_code(True): return
+        if not self.set_code(True):
+            return
         self.mainwindow.statusbar.showMessage(self.translator.translate("StatusMessage", "Awaiting for peer..."))
 
     @has_error_message

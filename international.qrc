@@ -1,0 +1,8 @@
+<RCC>
+  <qresource prefix="res">
+    <file>wordlist/en_US.txt</file>
+    <file>i18n/en_US.qm</file>
+    <file>i18n/it_IT.qm</file>
+    <file>wordlist/it_IT.txt</file>
+  </qresource>
+</RCC>

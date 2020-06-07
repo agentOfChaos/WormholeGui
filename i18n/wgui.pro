@@ -1,5 +1,6 @@
 SOURCES += ../main.py
 SOURCES += ../app.py
+SOURCES += ../orchestrator.py
 
 FORMS   += ../mainwindow.ui
 FORMS   += ../about.ui

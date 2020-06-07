@@ -248,7 +248,8 @@ class WormholeOrchestrator:
             if answer["file_ack"] == "ok":
                 self.stargate.finish_sending_file(self.tmp_filename, self.app.send_progress_callback)
                 return
-        self.error(answer)
+        self.app.wormhole_error(self.app.translator.translate("ErrorDialog", "Il peer ha rifiutato il trasferimento!"))
+        self.stargate.stop_all()
 
     def _upload_failure(self):
         self.stats.code_locked = False

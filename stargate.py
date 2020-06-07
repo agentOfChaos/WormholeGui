@@ -4,7 +4,7 @@ import json
 import os
 import hashlib
 from binascii import hexlify
-from time import sleep
+from typing import Callable, Any
 
 from twisted.internet.error import ConnectionClosed
 from twisted.internet.defer import inlineCallbacks
@@ -95,7 +95,7 @@ class StarGate:
         self.logger.info("Transmission sequence has begun, file: %s" % self.file_to_send)
 
     @inlineCallbacks
-    def finish_sending_file(self, filepath: str, progress_callback):
+    def finish_sending_file(self, filepath: str, progress_callback: Callable[[int, int, str, str], Any]):
         self.logger.info("Trasmission sequence entering phase 2")
         with open(filepath, "rb") as fp:
             fp.seek(0, 2)
@@ -115,7 +115,8 @@ class StarGate:
             def _count_and_hash(data, total_transferred):
                 hasher.update(data)
                 total_transferred[0] = total_transferred[0] + len(data)
-                if progress_callback is not None: progress_callback(total_transferred[0], filesize, self.file_to_send)
+                if progress_callback is not None:
+                    progress_callback(total_transferred[0], filesize, self.file_to_send, record_pipe.describe())
                 return data
 
             self.logger.info("Transmitting file...")
@@ -213,7 +214,7 @@ class StarGate:
             self.orchestrator.got_file_offer(offer)
 
     @inlineCallbacks
-    def download_file(self, filename, filesize, progress_callback=None):
+    def download_file(self, filename, filesize, progress_callback: Callable[[int, int, str, str], Any] = None):
         self.logger.info("Offered file: %s, %d bytes." % (filename, filesize))
 
         free = estimate_free_space(filename)
@@ -234,12 +235,13 @@ class StarGate:
 
         def _count_and_hash(partial_transferred, total_transferred):
             total_transferred[0] = total_transferred[0] + partial_transferred
-            if progress_callback is not None: progress_callback(total_transferred[0], filesize, filename)
+            if progress_callback is not None:
+                progress_callback(total_transferred[0], filesize, filename, record_pipe.describe())
             return partial_transferred
 
         self.logger.info("Receiving data...")
         hasher = hashlib.sha256()
-        with open(filename, "wb") as self.fp:
+        with open(os.path.join(self.config["app"]["download_folder"], filename), "wb") as self.fp:
             try:
                 received = yield record_pipe.writeToFile(self.fp, filesize, count_and_hash, hasher.update)
                 datahash = hasher.digest()
